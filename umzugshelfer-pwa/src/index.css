@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  height: 100%;
+  overflow-x: hidden; /* Verhindert horizontales Scrollen/Verschieben auf html-Ebene */
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+  position: relative;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Standard (Light Mode) Farben werden durch Tailwind Klassen in App.js gesetzt (bg-light-bg, text-light-text-main) */
+  /* Die spezifischen Dark Mode Farben werden durch html.dark body ... oder Tailwind dark: Präfixe gesteuert */
+  line-height: 1.6;
+}
+
+/* Globale Textfarbe für Light und Dark Mode über Tailwind Utility-Klassen setzen */
+/* Dies kann auch direkt im Body-Tag der public/index.html oder im Root-React-Component erfolgen */
+/* Beispiel: text-light-text-main dark:text-dark-text-main */
+
+/* Entferne die expliziten background-color und color hier, da sie jetzt von Tailwind Klassen in App.js kommen */
+/* und durch den ThemeProvider dynamisch gesteuert werden. */
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* Die @layer utilities für animate-pulse-once wurde entfernt, 
+   da die Animation jetzt in tailwind.config.js definiert ist. */
