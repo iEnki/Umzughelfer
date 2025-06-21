@@ -33,10 +33,15 @@ const budgetKategorieIcons = {
     lightColor: "text-light-accent-orange",
     darkColor: "text-dark-accent-orange",
   },
-  "Neue Möbel": {
+  Möbel: {
     icon: <ShoppingCart size={16} />,
     lightColor: "text-purple-600", // Beispiel Light-Mode Farbe
     darkColor: "text-purple-400",
+  },
+  Geräte: {
+    icon: <DollarSign size={16} />,
+    lightColor: "text-light-text-secondary",
+    darkColor: "text-dark-text-secondary",
   },
   Kaution: {
     icon: <DollarSign size={16} />,
@@ -460,11 +465,55 @@ const BudgetTracker = ({ session }) => {
       </div>
     );
 
+  // Neue Summen für Übersicht
+  const geplanteGesamtkosten = posten.reduce(
+    (sum, p) => sum + parseFloat(p.betrag || 0),
+    0
+  );
+  const gesamtTeilzahlungen = posten.reduce(
+    (sum, p) => sum + berechneSummeTeilzahlungen(p.teilzahlungen),
+    0
+  );
+  const gesamtOffen = geplanteGesamtkosten - gesamtTeilzahlungen;
+
   return (
     <div className="p-3 md:p-4 lg:p-5">
       <h2 className="text-2xl font-bold text-light-text-main dark:text-dark-text-main mb-4">
         Budget-Tracker
       </h2>
+      {/* Neue Gesamtzahlen-Übersicht */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+        <div className="bg-light-card-bg dark:bg-dark-card-bg p-3 rounded-lg border border-light-border dark:border-dark-border text-center">
+          <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+            Geplante Gesamtkosten
+          </p>
+          <p className="text-xl font-bold text-light-accent-green dark:text-dark-accent-green">
+            {formatGermanCurrency(geplanteGesamtkosten)} €
+          </p>
+        </div>
+        <div className="bg-light-card-bg dark:bg-dark-card-bg p-3 rounded-lg border border-light-border dark:border-dark-border text-center">
+          <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+            Getätigte Teilzahlungen
+          </p>
+          <p className="text-xl font-bold text-light-accent-purple dark:text-dark-accent-purple">
+            {formatGermanCurrency(gesamtTeilzahlungen)} €
+          </p>
+        </div>
+        <div className="bg-light-card-bg dark:bg-dark-card-bg p-3 rounded-lg border border-light-border dark:border-dark-border text-center">
+          <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+            Noch offene Zahlungen
+          </p>
+          <p
+            className={`text-xl font-bold ${
+              gesamtOffen < 0
+                ? "text-danger-color"
+                : "text-light-accent-orange dark:text-dark-accent-orange"
+            }`}
+          >
+            {formatGermanCurrency(gesamtOffen)} €
+          </p>
+        </div>
+      </div>
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="lg:w-1/3 space-y-4">
           <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-md border border-light-border dark:border-dark-border">
@@ -509,67 +558,89 @@ const BudgetTracker = ({ session }) => {
         </div>
 
         <div className="lg:w-2/3 space-y-4">
-          {userId && (
-            <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-md border border-light-border dark:border-dark-border">
-              <h3 className="text-lg font-semibold text-light-text-main dark:text-dark-text-main mb-3">
-                Budget-Übersicht
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center sm:text-left mb-3">
-                <div>
-                  <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                    Gesamt
-                  </p>
-                  <p className="text-xl font-bold text-light-text-main dark:text-dark-text-main">
-                    {formatGermanCurrency(gesamtbudget)} €
-                  </p>
+          {/* Budget-Übersicht entfernt, stattdessen neue Gesamtbudget-Box */}
+          <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-md border border-light-border dark:border-dark-border mb-4">
+            <h3 className="text-lg font-semibold text-light-text-main dark:text-dark-text-main mb-2">
+              Gesamtbudget
+            </h3>
+            <div className="flex flex-col items-center mb-2">
+              <span className="text-3xl font-extrabold text-light-accent-green dark:text-dark-accent-green tracking-tight">
+                {formatGermanCurrency(gesamtbudget)} €
+              </span>
+              <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary mt-1">
+                (manuell gespeichert)
+              </span>
+            </div>
+            {gesamtbudget > 0 && (
+              <div className="w-full mt-2 mb-1 relative">
+                {/* Moderner, animierter, farbiger Balken */}
+                <div
+                  className="w-full h-5 rounded-full bg-gradient-to-r from-light-border via-light-border to-light-border dark:from-dark-border dark:via-dark-border dark:to-dark-border shadow-inner relative overflow-hidden"
+                  style={{
+                    boxShadow:
+                      "0 1px 6px 0 rgba(0,0,0,0.07), 0 1.5px 3px 0 rgba(0,0,0,0.04)",
+                  }}
+                >
+                  <div
+                    className="h-5 rounded-full absolute left-0 top-0 transition-all duration-700"
+                    style={{
+                      width: `${Math.min(budgetNutzungProzent, 100)}%`,
+                      background:
+                        budgetNutzungProzent > 100
+                          ? "linear-gradient(90deg, #ef4444 0%, #f87171 100%)"
+                          : budgetNutzungProzent > 80
+                          ? "linear-gradient(90deg, #f59e42 0%, #f97316 100%)"
+                          : "linear-gradient(90deg, #22c55e 0%, #4ade80 100%)",
+                      boxShadow:
+                        budgetNutzungProzent > 100
+                          ? "0 0 8px 2px #ef4444"
+                          : budgetNutzungProzent > 80
+                          ? "0 0 8px 2px #f59e42"
+                          : "0 0 8px 2px #22c55e",
+                    }}
+                  ></div>
+                  {/* Werte als Overlay */}
+                  <div
+                    className="absolute left-0 top-0 w-full h-5 flex items-center justify-between px-3 pointer-events-none"
+                    style={{
+                      zIndex: 2,
+                      fontWeight: 600,
+                      fontSize: "0.95em",
+                      color:
+                        budgetNutzungProzent > 100
+                          ? "#fff"
+                          : theme === "dark"
+                          ? "#fff"
+                          : "#222",
+                      textShadow:
+                        "0 1px 2px rgba(0,0,0,0.12), 0 0.5px 1px rgba(0,0,0,0.10)",
+                    }}
+                  >
+                    <span>
+                      {formatGermanCurrency(budgetAusgegeben)} € verbraucht
+                    </span>
+                    <span>{Math.round(budgetNutzungProzent)}%</span>
+                    <span>{formatGermanCurrency(gesamtbudget)} € gesamt</span>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                    Ausgegeben
-                  </p>
-                  <p className="text-xl font-bold text-light-accent-purple dark:text-dark-accent-purple">
-                    {formatGermanCurrency(budgetAusgegeben)} €
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                    Rest
-                  </p>
-                  <p
-                    className={`text-xl font-bold ${
+                {/* Kleine Legende darunter */}
+                <div className="flex justify-between text-xs mt-1 px-1">
+                  <span className="text-light-text-secondary dark:text-dark-text-secondary">
+                    0 €
+                  </span>
+                  <span
+                    className={`font-semibold ${
                       restbudget < 0
-                        ? "text-danger-color" // danger-color kann universell bleiben
+                        ? "text-danger-color"
                         : "text-light-accent-green dark:text-dark-accent-green"
                     }`}
                   >
-                    {formatGermanCurrency(restbudget)} €
-                  </p>
+                    {formatGermanCurrency(gesamtbudget)} €
+                  </span>
                 </div>
               </div>
-              {gesamtbudget > 0 && (
-                <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-2">
-                  <div
-                    className="h-2 rounded-full text-xs flex items-center justify-center text-white font-medium"
-                    style={{
-                      width: `${Math.min(budgetNutzungProzent, 100)}%`,
-                      backgroundColor:
-                        theme === "dark"
-                          ? budgetNutzungProzent > 100
-                            ? "var(--danger-color)"
-                            : budgetNutzungProzent > 80
-                            ? "var(--dark-accent-orange)"
-                            : "var(--dark-accent-green)"
-                          : budgetNutzungProzent > 100
-                          ? "var(--danger-color)"
-                          : budgetNutzungProzent > 80
-                          ? "var(--light-accent-orange)"
-                          : "var(--light-accent-green)",
-                    }}
-                  ></div>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
           <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-md border border-light-border dark:border-dark-border">
             <div className="flex flex-col sm:flex-row justify-between items-baseline mb-3">
               <h3 className="text-lg font-semibold text-light-text-main dark:text-dark-text-main">
