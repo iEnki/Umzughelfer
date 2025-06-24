@@ -377,7 +377,7 @@ Antworte nur mit dem JSON-Array. Achte darauf, dass jeder explizit genannte Gege
           )}
         </button>
         {showHelp && (
-          <div className="mt-2 p-3 bg-dark-input border border-dark-border rounded-md text-xs text-dark-text-secondary space-y-2">
+          <div className="mt-2 p-3 bg-dark-input border border-dark-border rounded-md text-xs text-light-text-main dark:text-dark-text-main space-y-2">
             <p>
               <strong>1. OpenAI API-Key:</strong> Gib einmalig deinen OpenAI
               API-Key ein. Er wird für zukünftige Sitzungen in deinem Profil

@@ -83,6 +83,8 @@ const BudgetTracker = ({ session }) => {
   const [geplanterBetrag, setGeplanterBetrag] = useState("");
   const [datum, setDatum] = useState(new Date().toISOString().slice(0, 10));
   const [lieferdatum, setLieferdatum] = useState("");
+  const [bereitsBezahlt, setBereitsBezahlt] = useState("");
+  const [vollBezahlt, setVollBezahlt] = useState(false);
   // const [typ, setTyp] = useState("Ausgabe"); // Entfernt, da nicht mehr verwendet
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -411,6 +413,9 @@ const BudgetTracker = ({ session }) => {
     (p) => filterKategorie === "Alle" || p.kategorie === filterKategorie
   );
 
+  // Ansicht-Modus: "karten" (Standard) oder "liste"
+  const [ansichtModus, setAnsichtModus] = useState("karten");
+
   const handleExportLieferterminToIcs = async (item) => {
     if (!item.lieferdatum) {
       alert(
@@ -643,23 +648,111 @@ const BudgetTracker = ({ session }) => {
           </div>
           <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-md border border-light-border dark:border-dark-border">
             <div className="flex flex-col sm:flex-row justify-between items-baseline mb-3">
-              <h3 className="text-lg font-semibold text-light-text-main dark:text-dark-text-main">
-                Kostenaufstellung
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-light-text-main dark:text-dark-text-main">
+                  Kostenaufstellung
+                </h3>
+                {/* Ansicht-Umschalter */}
+                <button
+                  className={`ml-2 px-2 py-0.5 text-xs rounded-md font-medium ${
+                    ansichtModus === "karten"
+                      ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg"
+                      : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary"
+                  }`}
+                  onClick={() => setAnsichtModus("karten")}
+                  title="Kartenansicht"
+                >
+                  Karten
+                </button>
+                <button
+                  className={`px-2 py-0.5 text-xs rounded-md font-medium ${
+                    ansichtModus === "liste"
+                      ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg"
+                      : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary"
+                  }`}
+                  onClick={() => setAnsichtModus("liste")}
+                  title="Listenansicht"
+                >
+                  Liste
+                </button>
+              </div>
               <div className="flex flex-wrap gap-1 mt-1 sm:mt-0">
-                {budgetKategorienFürFilter.map((kat) => (
-                  <button
-                    key={kat}
-                    onClick={() => handleBudgetFilterChange(kat)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-md ${
-                      filterKategorie === kat
-                        ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg shadow-sm"
-                        : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
-                    }`}
-                  >
-                    {kat}
-                  </button>
-                ))}
+                {budgetKategorienFürFilter.map((kat) => {
+                  // Farben für Kategorie-Buttons
+                  let bg = "bg-light-border";
+                  let text = "text-light-text-secondary";
+                  let bgDark = "dark:bg-dark-border";
+                  let textDark = "dark:text-dark-text-secondary";
+                  if (filterKategorie === kat) {
+                    if (kat === "Alle") {
+                      bg = "bg-light-accent-green";
+                      text = "text-white";
+                      bgDark = "dark:bg-dark-accent-green";
+                      textDark = "dark:text-dark-bg";
+                    } else if (kat === "Transport") {
+                      bg = "bg-blue-600";
+                      text = "text-white";
+                      bgDark = "dark:bg-blue-500";
+                      textDark = "dark:text-white";
+                    } else if (kat === "Material") {
+                      bg = "bg-green-700";
+                      text = "text-white";
+                      bgDark = "dark:bg-green-500";
+                      textDark = "dark:text-white";
+                    } else if (kat === "Verpflegung") {
+                      bg = "bg-orange-600";
+                      text = "text-white";
+                      bgDark = "dark:bg-orange-400";
+                      textDark = "dark:text-white";
+                    } else if (kat === "Neue Möbel" || kat === "Möbel") {
+                      bg = "bg-yellow-600";
+                      text = "text-white";
+                      bgDark = "dark:bg-yellow-400";
+                      textDark = "dark:text-gray-900";
+                    } else if (kat === "Kaution") {
+                      bg = "bg-cyan-700";
+                      text = "text-white";
+                      bgDark = "dark:bg-cyan-400";
+                      textDark = "dark:text-gray-900";
+                    } else if (kat === "Makler") {
+                      bg = "bg-red-600";
+                      text = "text-white";
+                      bgDark = "dark:bg-red-400";
+                      textDark = "dark:text-white";
+                    } else if (kat === "Geräte") {
+                      bg = "bg-cyan-800";
+                      text = "text-white";
+                      bgDark = "dark:bg-cyan-400";
+                      textDark = "dark:text-gray-900";
+                    } else if (kat === "Sonstiges") {
+                      bg = "bg-blue-800";
+                      text = "text-white";
+                      bgDark = "dark:bg-blue-400";
+                      textDark = "dark:text-white";
+                    }
+                  }
+                  return (
+                    <button
+                      key={kat}
+                      onClick={() => handleBudgetFilterChange(kat)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md shadow-sm transition-colors duration-150
+                        ${bg} ${text} ${bgDark} ${textDark}
+                        ${
+                          filterKategorie === kat
+                            ? ""
+                            : "hover:bg-gray-200 dark:hover:bg-gray-700"
+                        }
+                      `}
+                      style={
+                        filterKategorie === kat
+                          ? { boxShadow: "0 1px 4px 0 rgba(0,0,0,0.08)" }
+                          : undefined
+                      }
+                    >
+                      {kat}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             {gefiltertePosten.length === 0 && !loading && (
@@ -669,130 +762,294 @@ const BudgetTracker = ({ session }) => {
                   : "Keine Kostenposten."}
               </p>
             )}
-            <div className="space-y-3">
-              {gefiltertePosten.map((p) => {
-                const summeBisherGezahlt = berechneSummeTeilzahlungen(
-                  p.teilzahlungen
-                );
-                const nochOffen = parseFloat(p.betrag) - summeBisherGezahlt;
-                const istVollBezahlt = nochOffen <= 0.001;
-                const itemIcon = getBudgetKategorieIcon(p.kategorie, theme);
-                return (
-                  <div
-                    key={p.id}
-                    className="border border-light-border dark:border-dark-border p-3 rounded-md hover:shadow-sm transition-shadow bg-gray-50 dark:bg-dark-bg/30"
-                  >
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-2">
-                      <div className="flex items-start space-x-2 flex-grow">
-                        <span className="mt-0.5">{itemIcon}</span>
-                        <div>
-                          <h4 className="text-sm font-semibold text-light-text-main dark:text-dark-text-main">
-                            {p.beschreibung}
-                          </h4>
-                          <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                            {p.kategorie} - Geplant:{" "}
-                            {formatGermanCurrency(p.betrag)} €
-                          </p>
-                          <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                            Fällig:{" "}
-                            {new Date(p.datum).toLocaleDateString("de-DE")}
-                            {p.lieferdatum &&
-                              ` / Lieferung: ${new Date(
-                                p.lieferdatum
-                              ).toLocaleDateString("de-DE")}`}
-                          </p>
+            {/* Kompakte Listenansicht */}
+            {ansichtModus === "liste" ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-light-border dark:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+                      <th className="px-2 py-1 font-semibold">Beschreibung</th>
+                      <th className="px-2 py-1 font-semibold">Kategorie</th>
+                      <th className="px-2 py-1 font-semibold">Geplant (€)</th>
+                      <th className="px-2 py-1 font-semibold">Bezahlt (€)</th>
+                      <th className="px-2 py-1 font-semibold">Offen (€)</th>
+                      <th className="px-2 py-1 font-semibold">Fällig</th>
+                      <th className="px-2 py-1 font-semibold">Aktionen</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gefiltertePosten.length === 0 && !loading ? (
+                      <tr>
+                        <td
+                          colSpan={7}
+                          className="text-center py-4 text-light-text-secondary dark:text-dark-text-secondary"
+                        >
+                          {filterKategorie !== "Alle"
+                            ? "Keine Posten für Kategorie."
+                            : "Keine Kostenposten."}
+                        </td>
+                      </tr>
+                    ) : (
+                      gefiltertePosten.map((p) => {
+                        const summeBisherGezahlt = berechneSummeTeilzahlungen(
+                          p.teilzahlungen
+                        );
+                        const nochOffen =
+                          parseFloat(p.betrag) - summeBisherGezahlt;
+                        const istVollBezahlt = nochOffen <= 0.001;
+                        return (
+                          <tr
+                            key={p.id}
+                            className="border-b border-light-border dark:border-dark-border hover:bg-light-border/30 dark:hover:bg-dark-border/30"
+                          >
+                            <td className="px-2 py-1 font-medium text-light-text-main dark:text-dark-text-main">
+                              {p.beschreibung}
+                            </td>
+                            <td
+                              className="px-2 py-1 font-semibold"
+                              style={{
+                                color:
+                                  theme === "dark"
+                                    ? p.kategorie === "Transport"
+                                      ? "#2563eb"
+                                      : p.kategorie === "Material"
+                                      ? "#16a34a"
+                                      : p.kategorie === "Verpflegung"
+                                      ? "#ea580c"
+                                      : p.kategorie === "Neue Möbel"
+                                      ? "#fde047"
+                                      : p.kategorie === "Kaution"
+                                      ? "#14b8a6"
+                                      : p.kategorie === "Makler"
+                                      ? "#dc2626"
+                                      : "#2563eb"
+                                    : p.kategorie === "Transport"
+                                    ? "#1d4ed8" // Dunkles Blau
+                                    : p.kategorie === "Material"
+                                    ? "#15803d" // Dunkles Grün
+                                    : p.kategorie === "Verpflegung"
+                                    ? "#ea580c" // Kräftiges Orange
+                                    : p.kategorie === "Neue Möbel"
+                                    ? "#ca8a04" // Dunkles Gelb
+                                    : p.kategorie === "Kaution"
+                                    ? "#0e7490" // Dunkles Türkis
+                                    : p.kategorie === "Makler"
+                                    ? "#dc2626" // Kräftiges Rot
+                                    : "#0e7490", // Sonstiges: Dunkles Türkis
+                              }}
+                            >
+                              {p.kategorie}
+                            </td>
+                            <td
+                              className="px-2 py-1 text-right font-semibold"
+                              style={{ color: "#dc2626" }}
+                            >
+                              {formatGermanCurrency(p.betrag)}
+                            </td>
+                            <td
+                              className="px-2 py-1 text-right font-semibold"
+                              style={{ color: "#16a34a" }}
+                            >
+                              {formatGermanCurrency(summeBisherGezahlt)}
+                            </td>
+                            <td
+                              className={`px-2 py-1 text-right ${
+                                istVollBezahlt
+                                  ? "text-light-accent-green dark:text-dark-accent-green"
+                                  : "text-danger-color"
+                              }`}
+                            >
+                              {formatGermanCurrency(nochOffen)}
+                            </td>
+                            <td
+                              className="px-2 py-1"
+                              style={{
+                                color:
+                                  theme === "dark"
+                                    ? "#9ca3af" // text-dark-text-secondary
+                                    : "#374151", // text-light-text-secondary
+                              }}
+                            >
+                              {new Date(p.datum).toLocaleDateString("de-DE")}
+                              {p.lieferdatum &&
+                                ` / ${new Date(
+                                  p.lieferdatum
+                                ).toLocaleDateString("de-DE")}`}
+                            </td>
+                            <td className="px-2 py-1">
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => openTeilzahlungModal(p.id)}
+                                  disabled={!userId}
+                                  title="Teilzahlung"
+                                  className="p-1 text-light-accent-green dark:text-dark-accent-green hover:opacity-80 rounded"
+                                >
+                                  <FilePlus size={13} />
+                                </button>
+                                <button
+                                  onClick={() => handleEditPostenClick(p)}
+                                  disabled={!userId}
+                                  title="Bearbeiten"
+                                  className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green rounded"
+                                >
+                                  <Edit3 size={13} />
+                                </button>
+                                {p.lieferdatum && (
+                                  <button
+                                    onClick={() =>
+                                      handleExportLieferterminToIcs(p)
+                                    }
+                                    title="Liefertermin als Kalendereintrag exportieren"
+                                    className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500 dark:hover:text-blue-400 rounded"
+                                  >
+                                    <CalendarPlus size={13} />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleDeletePosten(p.id)}
+                                  disabled={!userId}
+                                  title="Löschen"
+                                  className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-danger-color rounded"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {gefiltertePosten.map((p) => {
+                  const summeBisherGezahlt = berechneSummeTeilzahlungen(
+                    p.teilzahlungen
+                  );
+                  const nochOffen = parseFloat(p.betrag) - summeBisherGezahlt;
+                  const istVollBezahlt = nochOffen <= 0.001;
+                  const itemIcon = getBudgetKategorieIcon(p.kategorie, theme);
+                  return (
+                    <div
+                      key={p.id}
+                      className="border border-light-border dark:border-dark-border p-3 rounded-md hover:shadow-sm transition-shadow bg-gray-50 dark:bg-dark-bg/30"
+                    >
+                      <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-2">
+                        <div className="flex items-start space-x-2 flex-grow">
+                          <span className="mt-0.5">{itemIcon}</span>
+                          <div>
+                            <h4 className="text-sm font-semibold text-light-text-main dark:text-dark-text-main">
+                              {p.beschreibung}
+                            </h4>
+                            <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                              {p.kategorie} - Geplant:{" "}
+                              {formatGermanCurrency(p.betrag)} €
+                            </p>
+                            <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                              Fällig:{" "}
+                              {new Date(p.datum).toLocaleDateString("de-DE")}
+                              {p.lieferdatum &&
+                                ` / Lieferung: ${new Date(
+                                  p.lieferdatum
+                                ).toLocaleDateString("de-DE")}`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 flex items-center space-x-0.5 self-start sm:self-center mt-1 sm:mt-0">
+                          <button
+                            onClick={() => openTeilzahlungModal(p.id)}
+                            disabled={!userId}
+                            title="Teilzahlung"
+                            className="p-1.5 text-light-accent-green dark:text-dark-accent-green hover:opacity-80 rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
+                          >
+                            <FilePlus size={14} />
+                          </button>
+                          <button
+                            onClick={() => handleEditPostenClick(p)}
+                            disabled={!userId}
+                            title="Bearbeiten"
+                            className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
+                          >
+                            <Edit3 size={14} />
+                          </button>
+                          {p.lieferdatum && (
+                            <button
+                              onClick={() => handleExportLieferterminToIcs(p)}
+                              title="Liefertermin als Kalendereintrag exportieren"
+                              className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500 dark:hover:text-blue-400 rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
+                            >
+                              <CalendarPlus size={14} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeletePosten(p.id)}
+                            disabled={!userId}
+                            title="Löschen"
+                            className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-danger-color rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex-shrink-0 flex items-center space-x-0.5 self-start sm:self-center mt-1 sm:mt-0">
-                        <button
-                          onClick={() => openTeilzahlungModal(p.id)}
-                          disabled={!userId}
-                          title="Teilzahlung"
-                          className="p-1.5 text-light-accent-green dark:text-dark-accent-green hover:opacity-80 rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
-                        >
-                          <FilePlus size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleEditPostenClick(p)}
-                          disabled={!userId}
-                          title="Bearbeiten"
-                          className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
-                        >
-                          <Edit3 size={14} />
-                        </button>
-                        {p.lieferdatum && (
-                          <button
-                            onClick={() => handleExportLieferterminToIcs(p)}
-                            title="Liefertermin als Kalendereintrag exportieren"
-                            className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500 dark:hover:text-blue-400 rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
-                          >
-                            <CalendarPlus size={14} />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleDeletePosten(p.id)}
-                          disabled={!userId}
-                          title="Löschen"
-                          className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-danger-color rounded hover:bg-light-border/50 dark:hover:bg-dark-border/50"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-light-border dark:border-dark-border/50">
-                      <div className="flex justify-between items-center text-xs mb-0.5">
-                        <span className="font-medium text-light-text-secondary dark:text-dark-text-secondary">
-                          Bezahlt: {formatGermanCurrency(summeBisherGezahlt)} €
-                        </span>
-                        {istVollBezahlt ? (
-                          <span className="text-light-accent-green dark:text-dark-accent-green font-semibold flex items-center">
-                            <TrendingUp size={14} className="mr-1" />
-                            Voll bezahlt
+                      <div className="mt-2 pt-2 border-t border-light-border dark:border-dark-border/50">
+                        <div className="flex justify-between items-center text-xs mb-0.5">
+                          <span className="font-medium text-light-text-secondary dark:text-dark-text-secondary">
+                            Bezahlt: {formatGermanCurrency(summeBisherGezahlt)}{" "}
+                            €
                           </span>
-                        ) : (
-                          <span className="text-danger-color font-semibold">
-                            Offen: {formatGermanCurrency(nochOffen)} €
-                          </span>
-                        )}
-                      </div>
-                      {p.teilzahlungen && p.teilzahlungen.length > 0 && (
-                        <ul className="list-disc pl-4 mt-0.5 space-y-0.5 text-xs text-light-text-secondary dark:text-dark-text-secondary">
-                          {p.teilzahlungen.map((tz) => (
-                            <li
-                              key={tz.id}
-                              className="flex justify-between items-center group text-[11px]"
-                            >
-                              <span>
-                                {new Date(
-                                  tz.datum_teilzahlung
-                                ).toLocaleDateString("de-DE")}
-                                : {formatGermanCurrency(tz.betrag_teilzahlung)}€
-                                {tz.notiz_teilzahlung ? (
-                                  <span className="italic">
-                                    {" "}
-                                    - "{tz.notiz_teilzahlung}"
-                                  </span>
-                                ) : (
-                                  ""
-                                )}
-                              </span>
-                              <button
-                                onClick={() => handleDeleteTeilzahlung(tz.id)}
-                                disabled={!userId}
-                                title="Löschen"
-                                className="ml-1 p-0.5 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-600 opacity-0 group-hover:opacity-100"
+                          {istVollBezahlt ? (
+                            <span className="text-light-accent-green dark:text-dark-accent-green font-semibold flex items-center">
+                              <TrendingUp size={14} className="mr-1" />
+                              Voll bezahlt
+                            </span>
+                          ) : (
+                            <span className="text-danger-color font-semibold">
+                              Offen: {formatGermanCurrency(nochOffen)} €
+                            </span>
+                          )}
+                        </div>
+                        {p.teilzahlungen && p.teilzahlungen.length > 0 && (
+                          <ul className="list-disc pl-4 mt-0.5 space-y-0.5 text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                            {p.teilzahlungen.map((tz) => (
+                              <li
+                                key={tz.id}
+                                className="flex justify-between items-center group text-[11px]"
                               >
-                                <Trash2 size={12} />
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                                <span>
+                                  {new Date(
+                                    tz.datum_teilzahlung
+                                  ).toLocaleDateString("de-DE")}
+                                  :{" "}
+                                  {formatGermanCurrency(tz.betrag_teilzahlung)}€
+                                  {tz.notiz_teilzahlung ? (
+                                    <span className="italic">
+                                      {" "}
+                                      - "{tz.notiz_teilzahlung}"
+                                    </span>
+                                  ) : (
+                                    ""
+                                  )}
+                                </span>
+                                <button
+                                  onClick={() => handleDeleteTeilzahlung(tz.id)}
+                                  disabled={!userId}
+                                  title="Löschen"
+                                  className="ml-1 p-0.5 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-600 opacity-0 group-hover:opacity-100"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -862,6 +1119,46 @@ const BudgetTracker = ({ session }) => {
                   required
                   className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
                 />
+              </div>
+              <div>
+                <label
+                  htmlFor="postenBetragBezahlt"
+                  className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-0.5"
+                >
+                  Bereits bezahlt (€)
+                </label>
+                <input
+                  type="number"
+                  id="postenBetragBezahlt"
+                  value={vollBezahlt ? geplanterBetrag : bereitsBezahlt}
+                  onChange={(e) => {
+                    setBereitsBezahlt(e.target.value);
+                    setVollBezahlt(false);
+                  }}
+                  step="0.01"
+                  min="0"
+                  placeholder="z.B. 500"
+                  disabled={vollBezahlt}
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                />
+                <div className="flex items-center mt-1">
+                  <input
+                    type="checkbox"
+                    id="vollBezahlt"
+                    checked={vollBezahlt}
+                    onChange={(e) => {
+                      setVollBezahlt(e.target.checked);
+                      if (e.target.checked) setBereitsBezahlt(geplanterBetrag);
+                    }}
+                    className="mr-2"
+                  />
+                  <label
+                    htmlFor="vollBezahlt"
+                    className="text-xs text-light-text-secondary dark:text-dark-text-secondary"
+                  >
+                    Voll bezahlt (setzt Betrag auf geplanten Wert)
+                  </label>
+                </div>
               </div>
               <div>
                 <label

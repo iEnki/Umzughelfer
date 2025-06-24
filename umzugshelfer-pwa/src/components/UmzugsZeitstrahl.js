@@ -99,17 +99,21 @@ const UmzugsZeitstrahl = ({ session }) => {
     type: "",
   });
 
+  const [kistenEvents, setKistenEvents] = useState([]);
+
   const fetchAufgaben = useCallback(async () => {
     if (!userId) {
       setZukuenftigeAufgaben([]);
       setHeutigeAufgaben([]);
       setVergangeneAufgaben([]);
+      setKistenEvents([]);
       setLoading(false);
       return;
     }
     setLoading(true);
     setError(null);
     try {
+      // Aufgaben laden
       const { data: aufgabenData, error: dbError } = await supabase
         .from("todo_aufgaben")
         .select("*, angehaengte_dokument_ids")
@@ -173,6 +177,46 @@ const UmzugsZeitstrahl = ({ session }) => {
             new Date(a.faelligkeitsdatum) - new Date(b.faelligkeitsdatum)
         )
       );
+
+      // Kisten + Gegenstände laden
+      const { data: kistenData, error: kistenError } = await supabase
+        .from("pack_kisten")
+        .select(
+          "*, gegenstaende:pack_gegenstaende(id, beschreibung, menge, kategorie)"
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
+      if (kistenError) throw kistenError;
+      const kistenEventsArr =
+        (kistenData || []).map((kiste) => {
+          const gegenstaende = Array.isArray(kiste.gegenstaende)
+            ? kiste.gegenstaende
+            : [];
+          return {
+            __eventType: "kiste",
+            __timestamp: kiste.created_at,
+            title: `Kiste gepackt: ${kiste.name}`,
+            details: [
+              kiste.raum_neu ? `Zielraum: ${kiste.raum_neu}` : null,
+              kiste.status_kiste ? `Status: ${kiste.status_kiste}` : null,
+              kiste.notizen ? `Notizen: ${kiste.notizen}` : null,
+              gegenstaende.length > 0
+                ? "Inhalt:\n" +
+                  gegenstaende
+                    .map(
+                      (g) =>
+                        `- ${g.menge}x ${g.beschreibung}${
+                          g.kategorie ? ` (${g.kategorie})` : ""
+                        }`
+                    )
+                    .join("\n")
+                : "Inhalt: (leer)",
+            ]
+              .filter(Boolean)
+              .join("\n"),
+          };
+        }) || [];
+      setKistenEvents(kistenEventsArr);
     } catch (err) {
       console.error("Fehler Zeitstrahl:", err);
       setError("Aufgaben nicht geladen.");
@@ -784,11 +828,75 @@ Generiere nun das Umzugstagebuch:`;
       </div>
     );
 
-  const angezeigteTimelineElemente = [
-    ...zukuenftigeAufgaben.map((aufgabe) => renderTimelineElement(aufgabe)),
-    ...heutigeAufgaben.map((aufgabe) => renderTimelineElement(aufgabe)),
-    ...vergangeneAufgaben.map((aufgabe) => renderTimelineElement(aufgabe)),
+  // Hilfsfunktion für Kisten-Events
+  const renderKistenTimelineElement = (event, idx) => (
+    <VerticalTimelineElement
+      key={`kiste-${idx}`}
+      date={formatDateForTimeline(event.__timestamp)}
+      iconStyle={{
+        background: getTailwindColor("accentOrange", theme),
+        color: "#fff",
+      }}
+      icon={<Archive />}
+      contentStyle={{
+        background: getTailwindColor("cardBg", theme),
+        color: getTailwindColor("textMain", theme),
+        border: `1px solid ${getTailwindColor("border", theme)}`,
+        borderRadius: "0.25rem",
+      }}
+      contentArrowStyle={{
+        borderRight: `7px solid ${getTailwindColor("cardBg", theme)}`,
+      }}
+    >
+      <h3 className="vertical-timeline-element-title text-lg font-semibold">
+        {event.title}
+      </h3>
+      <div className="text-xs mt-1 whitespace-pre-line">{event.details}</div>
+      <span className="mt-2 inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100">
+        Kiste gepackt
+      </span>
+    </VerticalTimelineElement>
+  );
+
+  // Timeline-Elemente für Aufgaben und Kisten gemischt nach Datum
+  // Filter- und Sortierlogik nach Userwunsch
+  const offeneAufgaben = [...zukuenftigeAufgaben, ...heutigeAufgaben]
+    .filter((aufgabe) => !aufgabe.erledigt)
+    .map((aufgabe) => ({
+      ...aufgabe,
+      __eventType: "aufgabe",
+      __timestamp: aufgabe.faelligkeitsdatum || aufgabe.created_at,
+    }))
+    .sort((a, b) => new Date(a.__timestamp) - new Date(b.__timestamp));
+
+  const erledigteAufgaben = [
+    ...zukuenftigeAufgaben,
+    ...heutigeAufgaben,
+    ...vergangeneAufgaben,
+  ]
+    .filter((aufgabe) => !!aufgabe.erledigt)
+    .map((aufgabe) => ({
+      ...aufgabe,
+      __eventType: "aufgabe",
+      __timestamp: aufgabe.faelligkeitsdatum || aufgabe.created_at,
+    }))
+    .sort((a, b) => new Date(a.__timestamp) - new Date(b.__timestamp));
+
+  const kistenHistorisch = [...kistenEvents].sort(
+    (a, b) => new Date(a.__timestamp) - new Date(b.__timestamp)
+  );
+
+  const alleEvents = [
+    ...offeneAufgaben,
+    ...kistenHistorisch,
+    ...erledigteAufgaben,
   ];
+
+  const angezeigteTimelineElemente = alleEvents.map((event, idx) =>
+    event.__eventType === "kiste"
+      ? renderKistenTimelineElement(event, idx)
+      : renderTimelineElement(event)
+  );
 
   const timelineGlobalStyles = `
     .vertical-timeline::before { background: ${getTailwindColor(

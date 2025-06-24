@@ -13,6 +13,12 @@ import { useTheme } from "../contexts/ThemeContext"; // ThemeContext importieren
 const BedarfsrechnerFarbe = () => {
   const navigate = useNavigate(); // useNavigate hook
   const { theme } = useTheme(); // Theme aus Context holen
+
+  // NEU: Modus für Flächenberechnung (zimmer/wand)
+  const [modus, setModus] = useState("zimmer");
+  const [wandBreite, setWandBreite] = useState("");
+  const [wandHoehe, setWandHoehe] = useState("");
+
   const [length, setLength] = useState("");
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
@@ -36,7 +42,6 @@ const BedarfsrechnerFarbe = () => {
     const h = parseFloat(height) || 0;
     const numCoats = parseInt(coats, 10) || 0;
     const covPerLiter = parseFloat(coverage) || 0;
-    // const deduct = parseFloat(deductArea) || 0; // Ersetzt durch Berechnung aus deductionItems
 
     let totalDeductedArea = 0;
     deductionItems.forEach((item) => {
@@ -48,25 +53,51 @@ const BedarfsrechnerFarbe = () => {
       }
     });
 
-    if (l > 0 && w > 0 && h > 0 && numCoats > 0 && covPerLiter > 0) {
-      const calculatedWallArea = 2 * (l + w) * h;
-      setWallArea(calculatedWallArea);
-
-      const calculatedPaintableArea = Math.max(
-        0,
-        calculatedWallArea - totalDeductedArea
-      );
-      setPaintableArea(calculatedPaintableArea);
-
-      const calculatedRequiredPaint =
-        (calculatedPaintableArea * numCoats) / covPerLiter;
-      setRequiredPaint(calculatedRequiredPaint);
+    if (modus === "wand") {
+      const b = parseFloat(wandBreite) || 0;
+      const hWand = parseFloat(wandHoehe) || 0;
+      if (b > 0 && hWand > 0 && numCoats > 0 && covPerLiter > 0) {
+        const wandFlaeche = b * hWand;
+        setWallArea(wandFlaeche);
+        const paintable = Math.max(0, wandFlaeche - totalDeductedArea);
+        setPaintableArea(paintable);
+        setRequiredPaint((paintable * numCoats) / covPerLiter);
+      } else {
+        setWallArea(0);
+        setPaintableArea(0);
+        setRequiredPaint(0);
+      }
     } else {
-      setWallArea(0);
-      setPaintableArea(0);
-      setRequiredPaint(0);
+      if (l > 0 && w > 0 && h > 0 && numCoats > 0 && covPerLiter > 0) {
+        const calculatedWallArea = 2 * (l + w) * h;
+        setWallArea(calculatedWallArea);
+
+        const calculatedPaintableArea = Math.max(
+          0,
+          calculatedWallArea - totalDeductedArea
+        );
+        setPaintableArea(calculatedPaintableArea);
+
+        const calculatedRequiredPaint =
+          (calculatedPaintableArea * numCoats) / covPerLiter;
+        setRequiredPaint(calculatedRequiredPaint);
+      } else {
+        setWallArea(0);
+        setPaintableArea(0);
+        setRequiredPaint(0);
+      }
     }
-  }, [length, width, height, coats, coverage, deductionItems]);
+  }, [
+    modus,
+    length,
+    width,
+    height,
+    coats,
+    coverage,
+    deductionItems,
+    wandBreite,
+    wandHoehe,
+  ]);
 
   const handleDeductionChange = (id, field, value) => {
     setDeductionItems((prevItems) =>
@@ -153,46 +184,119 @@ const BedarfsrechnerFarbe = () => {
         </div>
       )}
 
+      {/* Modus-Umschalter: Zimmer oder Wand */}
+      <div className="mb-4 flex flex-wrap items-center gap-4">
+        <span className="font-medium text-light-text-main dark:text-dark-text-main">
+          Fläche berechnen für:
+        </span>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setModus("zimmer")}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border
+              ${
+                modus === "zimmer"
+                  ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg border-light-accent-green dark:border-dark-accent-green shadow"
+                  : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary border-light-border dark:border-dark-border hover:bg-gray-200 dark:hover:bg-gray-700"
+              }
+            `}
+            aria-pressed={modus === "zimmer"}
+          >
+            Zimmer (alle Wände)
+          </button>
+          <button
+            type="button"
+            onClick={() => setModus("wand")}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors border
+              ${
+                modus === "wand"
+                  ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg border-light-accent-green dark:border-dark-accent-green shadow"
+                  : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary border-light-border dark:border-dark-border hover:bg-gray-200 dark:hover:bg-gray-700"
+              }
+            `}
+            aria-pressed={modus === "wand"}
+          >
+            Einzelne Wand
+          </button>
+        </div>
+      </div>
+
+      {/* Eingabefelder für Zimmer oder Wand */}
+      {modus === "zimmer" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label htmlFor="length" className={labelClass}>
+              Raumlänge (m)
+            </label>
+            <input
+              type="number"
+              id="length"
+              value={length}
+              onChange={(e) => setLength(e.target.value)}
+              className={inputClass}
+              placeholder="z.B. 5"
+            />
+          </div>
+          <div>
+            <label htmlFor="width" className={labelClass}>
+              Raumbreite (m)
+            </label>
+            <input
+              type="number"
+              id="width"
+              value={width}
+              onChange={(e) => setWidth(e.target.value)}
+              className={inputClass}
+              placeholder="z.B. 4"
+            />
+          </div>
+          <div>
+            <label htmlFor="height" className={labelClass}>
+              Raumhöhe (m)
+            </label>
+            <input
+              type="number"
+              id="height"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              className={inputClass}
+              placeholder="z.B. 2.5"
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label htmlFor="wandBreite" className={labelClass}>
+              Wandbreite (m)
+            </label>
+            <input
+              type="number"
+              id="wandBreite"
+              value={wandBreite}
+              onChange={(e) => setWandBreite(e.target.value)}
+              className={inputClass}
+              placeholder="z.B. 3.5"
+            />
+          </div>
+          <div>
+            <label htmlFor="wandHoehe" className={labelClass}>
+              Wandhöhe (m)
+            </label>
+            <input
+              type="number"
+              id="wandHoehe"
+              value={wandHoehe}
+              onChange={(e) => setWandHoehe(e.target.value)}
+              className={inputClass}
+              placeholder="z.B. 2.5"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Restliche Felder (Anstriche, Ergiebigkeit) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label htmlFor="length" className={labelClass}>
-            Raumlänge (m)
-          </label>
-          <input
-            type="number"
-            id="length"
-            value={length}
-            onChange={(e) => setLength(e.target.value)}
-            className={inputClass}
-            placeholder="z.B. 5"
-          />
-        </div>
-        <div>
-          <label htmlFor="width" className={labelClass}>
-            Raumbreite (m)
-          </label>
-          <input
-            type="number"
-            id="width"
-            value={width}
-            onChange={(e) => setWidth(e.target.value)}
-            className={inputClass}
-            placeholder="z.B. 4"
-          />
-        </div>
-        <div>
-          <label htmlFor="height" className={labelClass}>
-            Raumhöhe (m)
-          </label>
-          <input
-            type="number"
-            id="height"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            className={inputClass}
-            placeholder="z.B. 2.5"
-          />
-        </div>
         <div>
           <label htmlFor="coats" className={labelClass}>
             Anzahl Anstriche
@@ -218,7 +322,6 @@ const BedarfsrechnerFarbe = () => {
             placeholder="z.B. 7"
           />
         </div>
-        {/* Das überflüssige </div> wurde hier entfernt */}
       </div>
 
       {/* Abzugsflächen Sektion */}
