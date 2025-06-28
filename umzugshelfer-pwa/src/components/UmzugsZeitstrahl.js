@@ -17,6 +17,7 @@ import {
   Save, // Für Speicherbutton
   XCircle as XCircleIcon, // Umbenannt für Klarheit im Modal
   Info as InfoIcon, // Für den Hinweis, wenn kein API Key gesetzt ist
+  CalendarPlus, // Für Liefertermine
 } from "lucide-react";
 import {
   VerticalTimeline,
@@ -100,6 +101,7 @@ const UmzugsZeitstrahl = ({ session }) => {
   });
 
   const [kistenEvents, setKistenEvents] = useState([]);
+  const [lieferEvents, setLieferEvents] = useState([]);
 
   const fetchAufgaben = useCallback(async () => {
     if (!userId) {
@@ -217,6 +219,29 @@ const UmzugsZeitstrahl = ({ session }) => {
           };
         }) || [];
       setKistenEvents(kistenEventsArr);
+
+      // Liefertermine laden
+      const { data: lieferData, error: lieferError } = await supabase
+        .from("budget_posten")
+        .select("id, beschreibung, kategorie, lieferdatum, betrag")
+        .eq("user_id", userId)
+        .not("lieferdatum", "is", null);
+      if (lieferError) throw lieferError;
+      const lieferEventsArr =
+        (lieferData || [])
+          .filter((p) => p.lieferdatum)
+          .map((p) => ({
+            __eventType: "lieferung",
+            __timestamp: p.lieferdatum,
+            title: `Lieferung: ${p.beschreibung}`,
+            details: [
+              p.kategorie ? `Kategorie: ${p.kategorie}` : null,
+              p.betrag ? `Betrag: ${p.betrag} €` : null,
+            ]
+              .filter(Boolean)
+              .join(" | "),
+          })) || [];
+      setLieferEvents(lieferEventsArr);
     } catch (err) {
       console.error("Fehler Zeitstrahl:", err);
       setError("Aufgaben nicht geladen.");
@@ -888,13 +913,46 @@ Generiere nun das Umzugstagebuch:`;
 
   const alleEvents = [
     ...offeneAufgaben,
+    ...lieferEvents,
     ...kistenHistorisch,
     ...erledigteAufgaben,
   ];
 
+  // Hilfsfunktion für Liefertermine
+  const renderLieferTimelineElement = (event, idx) => (
+    <VerticalTimelineElement
+      key={`lieferung-${idx}`}
+      date={formatDateForTimeline(event.__timestamp)}
+      iconStyle={{
+        background: getTailwindColor("accentBlue", theme),
+        color: "#fff",
+      }}
+      icon={<CalendarPlus />}
+      contentStyle={{
+        background: getTailwindColor("cardBg", theme),
+        color: getTailwindColor("textMain", theme),
+        border: `1px solid ${getTailwindColor("border", theme)}`,
+        borderRadius: "0.25rem",
+      }}
+      contentArrowStyle={{
+        borderRight: `7px solid ${getTailwindColor("cardBg", theme)}`,
+      }}
+    >
+      <h3 className="vertical-timeline-element-title text-lg font-semibold">
+        {event.title}
+      </h3>
+      <div className="text-xs mt-1 whitespace-pre-line">{event.details}</div>
+      <span className="mt-2 inline-block text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100">
+        Liefertermin
+      </span>
+    </VerticalTimelineElement>
+  );
+
   const angezeigteTimelineElemente = alleEvents.map((event, idx) =>
     event.__eventType === "kiste"
       ? renderKistenTimelineElement(event, idx)
+      : event.__eventType === "lieferung"
+      ? renderLieferTimelineElement(event, idx)
       : renderTimelineElement(event)
   );
 
