@@ -60,8 +60,7 @@ cd [PROJEKTVERZEICHNIS]
 
 1.  Gehe zu deinem Supabase-Projekt.
 2.  Navigiere zum **SQL Editor** (Database -> SQL Editor).
-3.  Führe die SQL-Befehle aus der Datei `Supabase_Tabellen_Setup.md` aus, um alle notwendigen Tabellen und Strukturen zu erstellen. Achte auf die Hinweise in der Datei bezüglich Reihenfolge und RLS (Row Level Security).
-4.  **Vordefinierte Materialien (Optional aber empfohlen):** Um den Materialplaner mit einer umfangreichen Liste an vordefinierten Materialien und Durchschnittspreisen zu befüllen, führe zusätzlich die SQL-Befehle aus der Datei `materialien_supabase_500.sql` (oder `materialien_supabase_500_realistisch.sql`, je nachdem welche Datei aktuell ist) in deinem Supabase SQL Editor aus. Diese Tabelle (`public.materialien`) ist wichtig für die volle Funktionsweise des Materialplaners und der Bedarfsrechner. Die Preise sind Durchschnittswerte und können nach dem Import individuell in der App oder direkt in der Datenbank angepasst werden.
+3.  Führe die SQL-Befehle aus der Datei `supabase_setup.md` aus, um alle notwendigen Tabellen und Strukturen zu erstellen. Achte auf die Hinweise in der Datei bezüglich Reihenfolge und RLS (Row Level Security).
 
 ### 3. Umgebungsvariablen konfigurieren
 
@@ -174,3 +173,4 @@ Dieses Projekt steht unter der MIT-Lizenz. Siehe die `LICENSE`-Datei für weiter
 ---
 
 Ich hoffen, dieser Umzugsplaner macht deinen nächsten Umzug ein wenig einfacher!
+
