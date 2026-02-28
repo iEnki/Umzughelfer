@@ -72,6 +72,44 @@ const statusOptionsList = [
 ]; // Für Filter
 const formStatusOptions = statusOptionsList.filter((s) => s !== "Alle Status"); // Für Formular
 
+const parseMengeEinheitValue = (rawValue) => {
+  if (!rawValue || typeof rawValue !== "string") {
+    return { menge: 1, einheit: "" };
+  }
+
+  const trimmedValue = rawValue.trim();
+  if (!trimmedValue) {
+    return { menge: 1, einheit: "" };
+  }
+
+  const match = trimmedValue.match(/^(\d+(?:[.,]\d+)?)\s*(.*)$/);
+  if (!match) {
+    return { menge: 1, einheit: trimmedValue };
+  }
+
+  const parsedMenge = parseFloat(match[1].replace(",", "."));
+  const einheit = (match[2] || "").trim();
+
+  return {
+    menge: Number.isFinite(parsedMenge) && parsedMenge > 0 ? parsedMenge : 1,
+    einheit,
+  };
+};
+
+const formatMengeEinheitValue = (menge, einheit) => {
+  const normalizedMenge =
+    Number.isFinite(menge) && menge > 0 ? menge : parseFloat(menge);
+  const safeMenge =
+    Number.isFinite(normalizedMenge) && normalizedMenge > 0 ? normalizedMenge : 1;
+
+  const mengeText = Number.isInteger(safeMenge)
+    ? String(safeMenge)
+    : String(safeMenge).replace(/\.0+$/, "");
+  const einheitText = (einheit || "").trim();
+
+  return `${mengeText}${einheitText ? ` ${einheitText}` : ""}`.trim();
+};
+
 const Materialplaner = ({ session }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -251,8 +289,11 @@ const Materialplaner = ({ session }) => {
         raum: raumVorschlag,
         kategorie: katVorschlag,
       } = location.state.neuerPosten;
+      const parsedMengeEinheit = parseMengeEinheitValue(menge_einheit);
+
       setBeschreibung(desc || "");
-      setMengeEinheit(menge_einheit || "");
+      setFormMenge(parsedMengeEinheit.menge);
+      setMengeEinheit(parsedMengeEinheit.einheit);
       setGeschaetzterPreis(
         geschaetzter_preis ? geschaetzter_preis.toString() : ""
       );
@@ -293,6 +334,8 @@ const Materialplaner = ({ session }) => {
   };
 
   const handleEditClick = (item) => {
+    const parsedMengeEinheit = parseMengeEinheitValue(item.menge_einheit);
+
     setEditingPostenId(item.id);
     setBeschreibung(item.beschreibung);
     setRaum(
@@ -303,7 +346,8 @@ const Materialplaner = ({ session }) => {
         ? item.kategorie
         : "Ohne Kategorie"
     );
-    setMengeEinheit(item.menge_einheit || "");
+    setFormMenge(parsedMengeEinheit.menge);
+    setMengeEinheit(parsedMengeEinheit.einheit);
     setGeschaetzterPreis(
       item.geschaetzter_preis ? item.geschaetzter_preis.toString() : ""
     );
@@ -328,12 +372,19 @@ const Materialplaner = ({ session }) => {
       alert(!userId ? "Bitte einloggen." : "Beschreibung ist ein Pflichtfeld.");
       return;
     }
+
+    const parsedFormMenge = parseFloat(formMenge);
+    if (!Number.isFinite(parsedFormMenge) || parsedFormMenge <= 0) {
+      alert("Bitte eine gültige Menge größer 0 eingeben.");
+      return;
+    }
+
     const postenDaten = {
       user_id: userId,
       beschreibung,
       raum: raum,
       kategorie: kategorie === "Ohne Kategorie" ? null : kategorie,
-      menge_einheit: `${formMenge} ${mengeEinheit}`.trim(),
+      menge_einheit: formatMengeEinheitValue(parsedFormMenge, mengeEinheit),
       geschaetzter_preis: geschaetzterPreis
         ? parseFloat(geschaetzterPreis)
         : null,
@@ -862,10 +913,18 @@ const Materialplaner = ({ session }) => {
                   type="number"
                   id="renoFormMenge"
                   value={formMenge}
-                  onChange={(e) =>
-                    setFormMenge(Math.max(1, parseInt(e.target.value, 10) || 1))
-                  }
-                  min="1"
+                  onChange={(e) => {
+                    const parsedValue = parseFloat(
+                      e.target.value.replace(",", ".")
+                    );
+                    setFormMenge(
+                      Number.isFinite(parsedValue) && parsedValue > 0
+                        ? parsedValue
+                        : 1
+                    );
+                  }}
+                  min="0.01"
+                  step="0.01"
                   required
                   className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
                 />
