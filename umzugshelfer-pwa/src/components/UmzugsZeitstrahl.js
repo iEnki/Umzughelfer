@@ -18,6 +18,8 @@ import {
   XCircle as XCircleIcon, // Umbenannt für Klarheit im Modal
   Info as InfoIcon, // Für den Hinweis, wenn kein API Key gesetzt ist
   CalendarPlus, // Für Liefertermine
+  DollarSign,
+  TrendingUp,
 } from "lucide-react";
 import {
   VerticalTimeline,
@@ -102,6 +104,8 @@ const UmzugsZeitstrahl = ({ session }) => {
 
   const [kistenEvents, setKistenEvents] = useState([]);
   const [lieferEvents, setLieferEvents] = useState([]);
+  const [zusatzEvents, setZusatzEvents] = useState([]);
+  const [eventFilter, setEventFilter] = useState("alle");
 
   const fetchAufgaben = useCallback(async () => {
     if (!userId) {
@@ -109,6 +113,8 @@ const UmzugsZeitstrahl = ({ session }) => {
       setHeutigeAufgaben([]);
       setVergangeneAufgaben([]);
       setKistenEvents([]);
+      setLieferEvents([]);
+      setZusatzEvents([]);
       setLoading(false);
       return;
     }
@@ -120,7 +126,6 @@ const UmzugsZeitstrahl = ({ session }) => {
         .from("todo_aufgaben")
         .select("*, angehaengte_dokument_ids")
         .eq("user_id", userId)
-        .not("faelligkeitsdatum", "is", null)
         .order("faelligkeitsdatum", { ascending: true });
       if (dbError) throw dbError;
       let alleAufgaben = aufgabenData || [];
@@ -159,7 +164,8 @@ const UmzugsZeitstrahl = ({ session }) => {
         heuteListe = [],
         vergangenheit = [];
       alleAufgaben.forEach((aufgabe) => {
-        const faelligkeit = new Date(aufgabe.faelligkeitsdatum);
+        const basisDatum = aufgabe.faelligkeitsdatum || aufgabe.created_at;
+        const faelligkeit = new Date(basisDatum);
         const userTimezoneOffset = faelligkeit.getTimezoneOffset() * 60000;
         const localFaelligkeit = new Date(
           faelligkeit.getTime() + userTimezoneOffset
@@ -223,9 +229,8 @@ const UmzugsZeitstrahl = ({ session }) => {
       // Liefertermine laden
       const { data: lieferData, error: lieferError } = await supabase
         .from("budget_posten")
-        .select("id, beschreibung, kategorie, lieferdatum, betrag")
-        .eq("user_id", userId)
-        .not("lieferdatum", "is", null);
+        .select("id, beschreibung, kategorie, lieferdatum, betrag, datum, created_at")
+        .eq("user_id", userId);
       if (lieferError) throw lieferError;
       const lieferEventsArr =
         (lieferData || [])
@@ -242,9 +247,139 @@ const UmzugsZeitstrahl = ({ session }) => {
               .join(" | "),
           })) || [];
       setLieferEvents(lieferEventsArr);
+
+      // Weitere Umzugs-Ereignisse laden (Budget, Teilzahlungen, Dokumente, Kontakte, Renovierung)
+      const [
+        { data: teilzahlungenData, error: teilzahlungenError },
+        { data: dokumenteData, error: dokumenteError },
+        { data: kontakteData, error: kontakteError },
+        { data: renovierungsData, error: renovierungsError },
+      ] = await Promise.all([
+        supabase
+          .from("budget_teilzahlungen")
+          .select(
+            "id, posten_id, betrag_teilzahlung, datum_teilzahlung, notiz_teilzahlung, created_at"
+          )
+          .eq("user_id", userId),
+        supabase
+          .from("dokumente")
+          .select("id, dateiname, datei_typ, beschreibung, todo_aufgabe_id, erstellt_am")
+          .eq("user_id", userId),
+        supabase
+          .from("kontakte")
+          .select("id, name, typ, telefon, adresse, created_at")
+          .eq("user_id", userId),
+        supabase
+          .from("renovierungs_posten")
+          .select(
+            "id, beschreibung, raum, kategorie, status, geschaetzter_preis, created_at, updated_at"
+          )
+          .eq("user_id", userId),
+      ]);
+
+      if (teilzahlungenError) throw teilzahlungenError;
+      if (dokumenteError) throw dokumenteError;
+      if (kontakteError) throw kontakteError;
+      if (renovierungsError) throw renovierungsError;
+
+      const budgetBeschreibungById = (lieferData || []).reduce((acc, posten) => {
+        acc[posten.id] = posten.beschreibung;
+        return acc;
+      }, {});
+
+      const budgetPostenEvents =
+        (lieferData || []).map((p) => ({
+          __eventType: "budget",
+          __timestamp: p.datum || p.created_at,
+          title: `Kostenposten: ${p.beschreibung}`,
+          details: [
+            p.kategorie ? `Kategorie: ${p.kategorie}` : null,
+            p.betrag != null ? `Geplant: ${p.betrag} €` : null,
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          __label: "Budget",
+          __link: "/budget",
+        })) || [];
+
+      const teilzahlungsEvents =
+        (teilzahlungenData || []).map((tz) => ({
+          __eventType: "teilzahlung",
+          __timestamp: tz.datum_teilzahlung || tz.created_at,
+          title: `Teilzahlung: ${
+            budgetBeschreibungById[tz.posten_id] || "Budgetposten"
+          }`,
+          details: [
+            `Bezahlt: ${tz.betrag_teilzahlung} €`,
+            tz.notiz_teilzahlung ? `Notiz: ${tz.notiz_teilzahlung}` : null,
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          __label: "Teilzahlung",
+          __link: "/budget",
+        })) || [];
+
+      const dokumentEvents =
+        (dokumenteData || []).map((doc) => ({
+          __eventType: "dokument",
+          __timestamp: doc.erstellt_am,
+          title: `Dokument: ${doc.dateiname}`,
+          details: [
+            doc.datei_typ ? `Typ: ${doc.datei_typ}` : null,
+            doc.beschreibung ? `Beschreibung: ${doc.beschreibung}` : null,
+            doc.todo_aufgabe_id ? "Mit Aufgabe verknüpft" : "Ohne Aufgabenbezug",
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          __label: "Dokument",
+          __link: "/dokumente",
+        })) || [];
+
+      const kontaktEvents =
+        (kontakteData || []).map((kontakt) => ({
+          __eventType: "kontakt",
+          __timestamp: kontakt.created_at,
+          title: `Kontakt: ${kontakt.name}`,
+          details: [
+            kontakt.typ ? `Typ: ${kontakt.typ}` : null,
+            kontakt.telefon ? `Telefon: ${kontakt.telefon}` : null,
+            kontakt.adresse ? `Adresse: ${kontakt.adresse}` : null,
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          __label: "Kontakt",
+          __link: "/kontakte",
+        })) || [];
+
+      const renovierungsEvents =
+        (renovierungsData || []).map((rp) => ({
+          __eventType: "renovierung",
+          __timestamp: rp.updated_at || rp.created_at,
+          title: `Renovierung: ${rp.beschreibung}`,
+          details: [
+            rp.raum ? `Raum: ${rp.raum}` : null,
+            rp.kategorie ? `Kategorie: ${rp.kategorie}` : null,
+            rp.status ? `Status: ${rp.status}` : null,
+            rp.geschaetzter_preis != null
+              ? `Geschätzt: ${rp.geschaetzter_preis} €`
+              : null,
+          ]
+            .filter(Boolean)
+            .join(" | "),
+          __label: "Renovierung",
+          __link: "/materialplaner",
+        })) || [];
+
+      setZusatzEvents([
+        ...budgetPostenEvents,
+        ...teilzahlungsEvents,
+        ...dokumentEvents,
+        ...kontaktEvents,
+        ...renovierungsEvents,
+      ]);
     } catch (err) {
       console.error("Fehler Zeitstrahl:", err);
-      setError("Aufgaben nicht geladen.");
+      setError("Zeitstrahl-Ereignisse konnten nicht geladen werden.");
     } finally {
       setLoading(false);
     }
@@ -790,7 +925,9 @@ Generiere nun das Umzugstagebuch:`;
     return (
       <VerticalTimelineElement
         key={aufgabe.id}
-        date={formatDateForTimeline(aufgabe.faelligkeitsdatum)}
+        date={formatDateForTimeline(
+          aufgabe.faelligkeitsdatum || aufgabe.created_at || aufgabe.__timestamp
+        )}
         iconStyle={getIconStyle(aufgabe)}
         icon={getIconForAufgabe(aufgabe)}
         contentStyle={getContentStyle(aufgabe)}
@@ -885,7 +1022,13 @@ Generiere nun das Umzugstagebuch:`;
 
   // Timeline-Elemente für Aufgaben und Kisten gemischt nach Datum
   // Filter- und Sortierlogik nach Userwunsch
-  const offeneAufgaben = [...zukuenftigeAufgaben, ...heutigeAufgaben]
+  const alleAufgaben = [
+    ...zukuenftigeAufgaben,
+    ...heutigeAufgaben,
+    ...vergangeneAufgaben,
+  ];
+
+  const offeneAufgaben = [...alleAufgaben]
     .filter((aufgabe) => !aufgabe.erledigt)
     .map((aufgabe) => ({
       ...aufgabe,
@@ -894,11 +1037,7 @@ Generiere nun das Umzugstagebuch:`;
     }))
     .sort((a, b) => new Date(a.__timestamp) - new Date(b.__timestamp));
 
-  const erledigteAufgaben = [
-    ...zukuenftigeAufgaben,
-    ...heutigeAufgaben,
-    ...vergangeneAufgaben,
-  ]
+  const erledigteAufgaben = [...alleAufgaben]
     .filter((aufgabe) => !!aufgabe.erledigt)
     .map((aufgabe) => ({
       ...aufgabe,
@@ -911,12 +1050,45 @@ Generiere nun das Umzugstagebuch:`;
     (a, b) => new Date(a.__timestamp) - new Date(b.__timestamp)
   );
 
+  const zusatzHistorisch = [...zusatzEvents].sort(
+    (a, b) => new Date(a.__timestamp) - new Date(b.__timestamp)
+  );
+
   const alleEvents = [
     ...offeneAufgaben,
     ...lieferEvents,
     ...kistenHistorisch,
+    ...zusatzHistorisch,
     ...erledigteAufgaben,
+  ].sort((a, b) => {
+    const aTime = new Date(a.__timestamp).getTime();
+    const bTime = new Date(b.__timestamp).getTime();
+    if (isNaN(aTime) && isNaN(bTime)) return 0;
+    if (isNaN(aTime)) return 1;
+    if (isNaN(bTime)) return -1;
+    return aTime - bTime;
+  });
+
+  const eventFilterChips = [
+    { key: "alle", label: "Alle" },
+    { key: "aufgabe", label: "To-Dos" },
+    { key: "kiste", label: "Kisten" },
+    { key: "lieferung", label: "Lieferungen" },
+    { key: "budget", label: "Budget" },
+    { key: "teilzahlung", label: "Teilzahlungen" },
+    { key: "dokument", label: "Dokumente" },
+    { key: "kontakt", label: "Kontakte" },
+    { key: "renovierung", label: "Renovierung" },
   ];
+
+  const eventTypeCounts = alleEvents.reduce((acc, event) => {
+    acc[event.__eventType] = (acc[event.__eventType] || 0) + 1;
+    return acc;
+  }, {});
+
+  const gefilterteEvents = alleEvents.filter(
+    (event) => eventFilter === "alle" || event.__eventType === eventFilter
+  );
 
   // Hilfsfunktion für Liefertermine
   const renderLieferTimelineElement = (event, idx) => (
@@ -948,12 +1120,104 @@ Generiere nun das Umzugstagebuch:`;
     </VerticalTimelineElement>
   );
 
-  const angezeigteTimelineElemente = alleEvents.map((event, idx) =>
+  const getZusatzEventMeta = (eventType) => {
+    switch (eventType) {
+      case "budget":
+        return {
+          icon: <DollarSign size={18} />,
+          badge: "Budget",
+          badgeClass:
+            "bg-indigo-100 text-indigo-700 dark:bg-indigo-700 dark:text-indigo-100",
+          bg: "#4f46e5",
+        };
+      case "teilzahlung":
+        return {
+          icon: <TrendingUp size={18} />,
+          badge: "Teilzahlung",
+          badgeClass:
+            "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100",
+          bg: "#16a34a",
+        };
+      case "dokument":
+        return {
+          icon: <FileText size={18} />,
+          badge: "Dokument",
+          badgeClass:
+            "bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100",
+          bg: "#2563eb",
+        };
+      case "kontakt":
+        return {
+          icon: <Briefcase size={18} />,
+          badge: "Kontakt",
+          badgeClass:
+            "bg-teal-100 text-teal-700 dark:bg-teal-700 dark:text-teal-100",
+          bg: "#0f766e",
+        };
+      case "renovierung":
+        return {
+          icon: <Home size={18} />,
+          badge: "Renovierung",
+          badgeClass:
+            "bg-amber-100 text-amber-700 dark:bg-amber-700 dark:text-amber-100",
+          bg: "#d97706",
+        };
+      default:
+        return {
+          icon: <Info size={18} />,
+          badge: "Ereignis",
+          badgeClass:
+            "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100",
+          bg: getTailwindColor("accentBlue", theme),
+        };
+    }
+  };
+
+  const renderZusatzTimelineElement = (event, idx) => {
+    const meta = getZusatzEventMeta(event.__eventType);
+    return (
+      <VerticalTimelineElement
+        key={`${event.__eventType}-${event.id || idx}`}
+        date={formatDateForTimeline(event.__timestamp)}
+        iconStyle={{ background: meta.bg, color: "#fff" }}
+        icon={meta.icon}
+        contentStyle={{
+          background: getTailwindColor("cardBg", theme),
+          color: getTailwindColor("textMain", theme),
+          border: `1px solid ${getTailwindColor("border", theme)}`,
+          borderRadius: "0.25rem",
+        }}
+        contentArrowStyle={{
+          borderRight: `7px solid ${getTailwindColor("cardBg", theme)}`,
+        }}
+        onTimelineElementClick={() => {
+          if (event.__link) navigate(event.__link);
+        }}
+        className={event.__link ? "cursor-pointer" : ""}
+      >
+        <h3 className="vertical-timeline-element-title text-lg font-semibold">
+          {event.title}
+        </h3>
+        {event.details && (
+          <div className="text-xs mt-1 whitespace-pre-line">{event.details}</div>
+        )}
+        <span
+          className={`mt-2 inline-block text-xs font-semibold px-2 py-0.5 rounded-full ${meta.badgeClass}`}
+        >
+          {meta.badge}
+        </span>
+      </VerticalTimelineElement>
+    );
+  };
+
+  const angezeigteTimelineElemente = gefilterteEvents.map((event, idx) =>
     event.__eventType === "kiste"
       ? renderKistenTimelineElement(event, idx)
       : event.__eventType === "lieferung"
       ? renderLieferTimelineElement(event, idx)
-      : renderTimelineElement(event)
+      : event.__eventType === "aufgabe"
+      ? renderTimelineElement(event)
+      : renderZusatzTimelineElement(event, idx)
   );
 
   const timelineGlobalStyles = `
@@ -982,7 +1246,8 @@ Generiere nun das Umzugstagebuch:`;
           Mein Umzugs-Zeitstrahl
         </h1>
         <p className="text-light-text-secondary dark:text-dark-text-secondary mt-1">
-          Deine Aufgaben chronologisch: Zukünftiges oben, Vergangenes unten.
+          Dein Umzug chronologisch: Aufgaben, Budget, Kisten, Dokumente,
+          Kontakte und Renovierung im Zeitverlauf.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <button
@@ -1060,19 +1325,58 @@ Generiere nun das Umzugstagebuch:`;
               </PDFDownloadLink>
             )}
         </div>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {eventFilterChips.map((chip) => {
+            const count =
+              chip.key === "alle"
+                ? alleEvents.length
+                : eventTypeCounts[chip.key] || 0;
+            const isActive = eventFilter === chip.key;
+
+            return (
+              <button
+                key={chip.key}
+                type="button"
+                onClick={() => setEventFilter(chip.key)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-full border transition-colors ${
+                  isActive
+                    ? theme === "dark"
+                      ? "bg-orange-500 text-white border-orange-500"
+                      : "bg-orange-500 text-white border-orange-500"
+                    : theme === "dark"
+                    ? "bg-dark-card-bg text-dark-text-secondary border-dark-border hover:text-dark-text-main"
+                    : "bg-light-card-bg text-light-text-secondary border-light-border hover:text-light-text-main"
+                }`}
+              >
+                {chip.label}
+                <span className="ml-1 opacity-80">({count})</span>
+              </button>
+            );
+          })}
+        </div>
       </header>
       {angezeigteTimelineElemente.length === 0 && !loading && (
         <div className="text-center py-10 bg-light-card-bg dark:bg-dark-card-bg p-6 rounded-lg shadow">
           <p className="text-light-text-secondary dark:text-dark-text-secondary">
-            Noch keine Aufgaben mit Fälligkeitsdatum vorhanden. Füge Aufgaben in
-            deinen{" "}
+            Noch keine Ereignisse vorhanden. Füge Aufgaben, Budgetposten,
+            Teilzahlungen, Kisten, Dokumente oder Kontakte hinzu.
+          </p>
+          <p className="text-light-text-secondary dark:text-dark-text-secondary mt-2">
+            Starte z. B. mit deinen{" "}
             <Link
               to="/todos"
               className="text-light-accent-orange dark:text-dark-accent-orange hover:underline"
             >
               To-Do Listen
             </Link>{" "}
-            hinzu, um sie hier zu sehen.
+            oder dem{" "}
+            <Link
+              to="/budget"
+              className="text-light-accent-orange dark:text-dark-accent-orange hover:underline"
+            >
+              Budget
+            </Link>
+            .
           </p>
         </div>
       )}
