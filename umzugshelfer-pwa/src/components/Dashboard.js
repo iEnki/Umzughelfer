@@ -122,19 +122,24 @@ const Dashboard = ({ session }) => {
       const { data: kistenDataForPackliste, error: kistenError } =
         await supabase
           .from("pack_kisten")
-          .select("id, status_kiste, inhalt:pack_gegenstaende(count)")
+          .select("id")
           .eq("user_id", userId);
       if (kistenError) throw kistenError;
-      let totalItems = 0;
-      let gepackteKisten = 0;
-      if (kistenDataForPackliste) {
-        setKistenGesamtCount(kistenDataForPackliste.length);
-        kistenDataForPackliste.forEach((kiste) => {
-          if (kiste.inhalt && kiste.inhalt.length > 0)
-            totalItems += kiste.inhalt[0].count;
-          if (kiste.status_kiste === "Gepackt") gepackteKisten++;
-        });
-      }
+
+      const { data: gegenstaendeData, error: gegenstaendeError } =
+        await supabase
+          .from("pack_gegenstaende")
+          .select("id, kiste_id")
+          .eq("user_id", userId);
+      if (gegenstaendeError) throw gegenstaendeError;
+
+      const totalItems = (gegenstaendeData || []).length;
+      const gesamtKisten = (kistenDataForPackliste || []).length;
+
+      // Datenmodell: Eine Kiste gilt als vorhanden/erfasst, sobald sie existiert.
+      const gepackteKisten = gesamtKisten;
+
+      setKistenGesamtCount(gesamtKisten);
       setPacklisteItemsCount(totalItems);
       setKistenGepacktCount(gepackteKisten);
       const heuteString = new Date().toISOString().split("T")[0];
@@ -453,7 +458,7 @@ const Dashboard = ({ session }) => {
                 {kistenGepacktCount} / {kistenGesamtCount}
               </p>
               <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary -mt-0.5">
-                Gepackt
+                Erfasst
               </p>
               {kistenGesamtCount > 0 && (
                 <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-1.5 mt-1">
