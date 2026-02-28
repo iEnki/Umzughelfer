@@ -14,6 +14,9 @@ const LoginForm = ({ setSession, onLoginSuccess, closeLoginModal }) => {
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
   const [forgotPasswordError, setForgotPasswordError] = useState("");
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
+  const passwordResetRedirectUrl =
+    process.env.REACT_APP_PASSWORD_RESET_REDIRECT_URL ||
+    `${window.location.origin}/update-password`;
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -69,9 +72,9 @@ const LoginForm = ({ setSession, onLoginSuccess, closeLoginModal }) => {
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-        forgotPasswordEmail,
+        forgotPasswordEmail.trim(),
         {
-          redirectTo: window.location.origin + "/update-password",
+          redirectTo: passwordResetRedirectUrl,
         }
       );
 
@@ -83,6 +86,16 @@ const LoginForm = ({ setSession, onLoginSuccess, closeLoginModal }) => {
       );
       setForgotPasswordEmail("");
     } catch (err) {
+      const resetErrorMessage = `${err?.message || ""}`.toLowerCase();
+      if (
+        resetErrorMessage.includes("redirect") &&
+        resetErrorMessage.includes("not allowed")
+      ) {
+        setForgotPasswordError(
+          "Die Redirect-URL ist in Supabase nicht freigegeben. Bitte trage die URL in Authentication > URL Configuration > Redirect URLs ein."
+        );
+        return;
+      }
       console.error("Passwort zurücksetzen Fehler:", err);
       setForgotPasswordError(
         err.message ||
