@@ -61,7 +61,8 @@ const BedarfsrechnerKisten = () => {
   }, [numAdults, numChildren, numRooms]);
 
   const handleManualQuantityChange = (itemId, value) => {
-    setManualQuantities((prev) => ({ ...prev, [itemId]: value }));
+    const sanitizedValue = value.replace(/[^\d]/g, "");
+    setManualQuantities((prev) => ({ ...prev, [itemId]: sanitizedValue }));
   };
 
   const baseInputClass =
@@ -137,15 +138,17 @@ const BedarfsrechnerKisten = () => {
                   {box.name}
                 </label>
                 <input
-                  type="number"
+                  type="text"
                   id={box.id}
                   value={manualQuantities[box.id]}
                   onChange={(e) =>
                     handleManualQuantityChange(box.id, e.target.value)
                   }
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="off"
                   className={inputClass}
                   placeholder="0"
-                  min="0"
                 />
               </div>
             ))}
