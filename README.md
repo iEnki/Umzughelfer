@@ -52,7 +52,7 @@ Der Umzugsplaner PWA ist eine umfassende Progressive Web Application, die dich b
 ### 1. Repository klonen
 
 ```bash
-git clone https://github.com/iEnki/umzugplaner.git
+git clone https://github.com/iEnki/umzughelfer.git
 cd [PROJEKTVERZEICHNIS]
 ```
 
@@ -173,4 +173,5 @@ Dieses Projekt steht unter der MIT-Lizenz. Siehe die `LICENSE`-Datei für weiter
 ---
 
 Ich hoffen, dieser Umzugsplaner macht deinen nächsten Umzug ein wenig einfacher!
+
 
