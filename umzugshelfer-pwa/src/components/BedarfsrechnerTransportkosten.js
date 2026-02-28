@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom"; // useNavigate importieren
 import { Truck, Info, ChevronDown, ChevronUp, SendToBack } from "lucide-react"; // SendToBack für Icon
 import { useTheme } from "../contexts/ThemeContext"; // ThemeContext importieren
 
+const getLocalDateInputValue = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 const BedarfsrechnerTransportkosten = ({ initialVolume }) => {
   const navigate = useNavigate(); // useNavigate hook
   const { theme } = useTheme(); // Theme aus Context holen
@@ -187,7 +194,7 @@ const BedarfsrechnerTransportkosten = ({ initialVolume }) => {
                         betrag: totalTransportCost,
                         kategorie: "Transport", // Feste Kategorie oder später auswählbar machen
                         typ: "Ausgabe",
-                        datum: new Date().toISOString().split("T")[0], // Heutiges Datum
+                        datum: getLocalDateInputValue(), // Heutiges lokales Datum
                       },
                     },
                   });
