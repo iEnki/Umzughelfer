@@ -2443,6 +2443,34 @@ const PacklisteManager = ({ session }) => {
     setUploadingPhoto(false);
   }, []);
 
+  const resolveKisteFotoUrl = useCallback(async (fotoPfad) => {
+    if (!fotoPfad) return null;
+
+    if (
+      fotoPfad.startsWith("http://") ||
+      fotoPfad.startsWith("https://")
+    ) {
+      return fotoPfad;
+    }
+
+    try {
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from("kisten-fotos")
+        .createSignedUrl(fotoPfad, 3600);
+
+      if (!signedError && signedData?.signedUrl) {
+        return signedData.signedUrl;
+      }
+    } catch (err) {
+      console.warn("Signed URL für Kistenfoto konnte nicht erstellt werden:", err);
+    }
+
+    const { data: publicData } = supabase.storage
+      .from("kisten-fotos")
+      .getPublicUrl(fotoPfad);
+    return publicData?.publicUrl || null;
+  }, []);
+
   const handleOpenKisteModal = useCallback(
     async (kiste) => {
       setAktuelleKiste(kiste);
@@ -2452,15 +2480,10 @@ const PacklisteManager = ({ session }) => {
       resetFotoForm();
       setShowPhotoSectionInModal(false);
       setShowQrCodeSectionInModal(false);
-      if (kiste.foto_pfad) {
-        const { data } = supabase.storage
-          .from("kisten-fotos")
-          .getPublicUrl(kiste.foto_pfad);
-        setCurrentKistePhotoUrl(data?.publicUrl || null);
-      }
+      setCurrentKistePhotoUrl(await resolveKisteFotoUrl(kiste.foto_pfad));
       setShowKisteModal(true);
     },
-    [resetGegenstandForm, resetFotoForm]
+    [resetGegenstandForm, resetFotoForm, resolveKisteFotoUrl]
   );
 
   const fetchKisten = useCallback(async () => {
@@ -2480,13 +2503,19 @@ const PacklisteManager = ({ session }) => {
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       if (dbError) throw dbError;
-      setKisten(data || []);
+      const kistenMitFotoUrls = await Promise.all(
+        (data || []).map(async (kiste) => ({
+          ...kiste,
+          foto_url: await resolveKisteFotoUrl(kiste.foto_pfad),
+        }))
+      );
+      setKisten(kistenMitFotoUrls);
     } catch (err) {
       setError("Packkisten konnten nicht geladen werden.");
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, resolveKisteFotoUrl]);
   useEffect(() => {
     if (userId) fetchKisten();
     else {
@@ -2746,15 +2775,18 @@ const PacklisteManager = ({ session }) => {
       }
       console.log("Datenbank-Update für foto_pfad erfolgreich:", updateData);
 
-      const { data: urlData } = supabase.storage
-        .from("kisten-fotos")
-        .getPublicUrl(filePath);
-      console.log("Public URL Daten:", urlData);
-      setCurrentKistePhotoUrl(urlData?.publicUrl || null);
-      setAktuelleKiste((prev) => ({ ...prev, foto_pfad: filePath }));
+      const resolvedFotoUrl = await resolveKisteFotoUrl(filePath);
+      setCurrentKistePhotoUrl(resolvedFotoUrl);
+      setAktuelleKiste((prev) => ({
+        ...prev,
+        foto_pfad: filePath,
+        foto_url: resolvedFotoUrl,
+      }));
       setKisten((prevKisten) =>
         prevKisten.map((k) =>
-          k.id === aktuelleKiste.id ? { ...k, foto_pfad: filePath } : k
+          k.id === aktuelleKiste.id
+            ? { ...k, foto_pfad: filePath, foto_url: resolvedFotoUrl }
+            : k
         )
       );
       setSelectedFile(null);
@@ -2780,10 +2812,12 @@ const PacklisteManager = ({ session }) => {
         .update({ foto_pfad: null })
         .eq("id", aktuelleKiste.id);
       setCurrentKistePhotoUrl(null);
-      setAktuelleKiste((prev) => ({ ...prev, foto_pfad: null }));
+      setAktuelleKiste((prev) => ({ ...prev, foto_pfad: null, foto_url: null }));
       setKisten((prevKisten) =>
         prevKisten.map((k) =>
-          k.id === aktuelleKiste.id ? { ...k, foto_pfad: null } : k
+          k.id === aktuelleKiste.id
+            ? { ...k, foto_pfad: null, foto_url: null }
+            : k
         )
       );
       alert("Foto entfernt.");
@@ -2906,16 +2940,7 @@ const PacklisteManager = ({ session }) => {
   const renderKachelAnsicht = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {gefilterteKisten.map((kiste) => {
-        let kisteImageUrl = "/kisten.png"; // Standard-Fallback direkt setzen
-        if (kiste.foto_pfad) {
-          const { data } = supabase.storage
-            .from("kisten-fotos")
-            .getPublicUrl(kiste.foto_pfad);
-          if (data?.publicUrl) {
-            // Nur überschreiben, wenn eine gültige URL vorhanden ist
-            kisteImageUrl = data.publicUrl;
-          }
-        }
+        const kisteImageUrl = kiste.foto_url || "/kisten.png";
         return (
           <div
             key={kiste.id}
@@ -3012,15 +3037,7 @@ const PacklisteManager = ({ session }) => {
         <tbody>
           {gefilterteKisten.map((kiste) => {
             const isAufgeklappt = aufgeklappteKisten.includes(kiste.id);
-            let spezifischeKisteImageUrl = null; // Variable für die spezifische Supabase-URL
-            if (kiste.foto_pfad) {
-              const { data } = supabase.storage
-                .from("kisten-fotos")
-                .getPublicUrl(kiste.foto_pfad);
-              if (data?.publicUrl) {
-                spezifischeKisteImageUrl = data.publicUrl;
-              }
-            }
+            const spezifischeKisteImageUrl = kiste.foto_url || null;
 
             return (
               <React.Fragment key={kiste.id}>
