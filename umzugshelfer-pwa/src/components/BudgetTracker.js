@@ -108,6 +108,8 @@ const BudgetTracker = ({ session }) => {
     setGeplanterBetrag("");
     setDatum(new Date().toISOString().slice(0, 10));
     setLieferdatum("");
+    setBereitsBezahlt("");
+    setVollBezahlt(false);
     // setTyp("Ausgabe"); // Entfernt
     setEditingPostenId(null);
     setShowPostenModal(false);
@@ -207,6 +209,8 @@ const BudgetTracker = ({ session }) => {
       // setTyp(itemTyp || "Ausgabe"); // Entfernt
       setDatum(itemDatum || new Date().toISOString().slice(0, 10));
       setLieferdatum(""); // Lieferdatum ist nicht Teil des übergebenen Objekts
+      setBereitsBezahlt("");
+      setVollBezahlt(false);
       setEditingPostenId(null); // Sicherstellen, dass es ein neuer Posten ist
       setShowPostenModal(true); // Formular direkt öffnen
 
@@ -269,12 +273,21 @@ const BudgetTracker = ({ session }) => {
   };
 
   const handleEditPostenClick = (item) => {
+    const summeBisherGezahlt = (item.teilzahlungen || []).reduce(
+      (s, tz) => s + parseFloat(tz.betrag_teilzahlung || 0),
+      0
+    );
+    const geplanterBetragWert = parseFloat(item.betrag || 0);
     setEditingPostenId(item.id);
     setBeschreibung(item.beschreibung);
     setKategorie(item.kategorie);
     setGeplanterBetrag(item.betrag.toString());
     setDatum(item.datum);
     setLieferdatum(item.lieferdatum || "");
+    setBereitsBezahlt(
+      summeBisherGezahlt > 0 ? summeBisherGezahlt.toString() : ""
+    );
+    setVollBezahlt(summeBisherGezahlt >= geplanterBetragWert);
     // setTyp(item.typ || "Ausgabe"); // Entfernt, da 'typ' nicht mehr im State ist und in 'item' nicht existieren sollte
     setShowPostenModal(true);
   };
@@ -299,29 +312,69 @@ const BudgetTracker = ({ session }) => {
       alert("Beschreibung, Betrag, Datum Pflicht.");
       return;
     }
+    const geplanterBetragWert = parseFloat(geplanterBetrag);
+    const bereitsBezahltWert = parseFloat(
+      vollBezahlt ? geplanterBetrag : bereitsBezahlt
+    );
+    const initialBezahlt = isNaN(bereitsBezahltWert) ? 0 : bereitsBezahltWert;
+
+    if (!editingPostenId) {
+      if (initialBezahlt < 0) {
+        alert("Bereits bezahlt darf nicht negativ sein.");
+        return;
+      }
+      if (initialBezahlt > geplanterBetragWert) {
+        alert("Bereits bezahlt darf den geplanten Betrag nicht überschreiten.");
+        return;
+      }
+    }
     const postenDaten = {
       beschreibung,
       kategorie,
-      betrag: parseFloat(geplanterBetrag),
+      betrag: geplanterBetragWert,
       datum,
       lieferdatum: lieferdatum || null,
       user_id: userId,
       // typ: typ || "Ausgabe", // Entfernt, da nicht in DB und nicht benötigt
     };
     try {
-      let error;
       if (editingPostenId) {
-        ({ error } = await supabase
+        const { error } = await supabase
           .from("budget_posten")
           .update(postenDaten)
-          .match({ id: editingPostenId, user_id: userId }));
+          .match({ id: editingPostenId, user_id: userId });
+        if (error) throw error;
       } else {
-        ({ error } = await supabase
+        const { data: insertedPosten, error: insertError } = await supabase
           .from("budget_posten")
-          .insert([postenDaten]));
+          .insert([postenDaten])
+          .select("id")
+          .single();
+        if (insertError) throw insertError;
+
+        if (initialBezahlt > 0 && insertedPosten?.id) {
+          const { error: teilzahlungError } = await supabase
+            .from("budget_teilzahlungen")
+            .insert([
+              {
+                user_id: userId,
+                posten_id: insertedPosten.id,
+                betrag_teilzahlung: initialBezahlt,
+                datum_teilzahlung: new Date().toISOString().slice(0, 10),
+                notiz_teilzahlung: "Initialzahlung bei Erstellung",
+              },
+            ]);
+
+          if (teilzahlungError) {
+            await supabase
+              .from("budget_posten")
+              .delete()
+              .match({ id: insertedPosten.id, user_id: userId });
+            throw teilzahlungError;
+          }
+        }
       }
-      if (error) throw error;
-      fetchUserData();
+      await fetchUserData();
       resetForm();
     } catch (err) {
       console.error(`Fehler Speichern Posten: ${err.message}`);
@@ -1138,7 +1191,7 @@ const BudgetTracker = ({ session }) => {
                   step="0.01"
                   min="0"
                   placeholder="z.B. 500"
-                  disabled={vollBezahlt}
+                  disabled={vollBezahlt || !!editingPostenId}
                   className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
                 />
                 <div className="flex items-center mt-1">
@@ -1150,6 +1203,7 @@ const BudgetTracker = ({ session }) => {
                       setVollBezahlt(e.target.checked);
                       if (e.target.checked) setBereitsBezahlt(geplanterBetrag);
                     }}
+                    disabled={!!editingPostenId}
                     className="mr-2"
                   />
                   <label
@@ -1159,6 +1213,12 @@ const BudgetTracker = ({ session }) => {
                     Voll bezahlt (setzt Betrag auf geplanten Wert)
                   </label>
                 </div>
+                {editingPostenId && (
+                  <p className="text-[11px] mt-1 text-light-text-secondary dark:text-dark-text-secondary">
+                    Teilzahlungen bei bestehenden Posten bitte über den
+                    Teilzahlung-Button erfassen.
+                  </p>
+                )}
               </div>
               <div>
                 <label
