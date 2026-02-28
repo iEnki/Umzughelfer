@@ -64,10 +64,3 @@ Policies erlauben **Insert/Select/Delete** nur im eigenen Ordner `user_id/`.
 - Dashboard-Fehler `PGRST201` (mehrere Beziehungen zwischen `pack_kisten` und `pack_gegenstaende`):
   Das Script entfernt automatisch die Legacy-Spalte `kisten_id` und lädt das PostgREST-Schema neu. Wenn der Fehler bleibt,
   stelle sicher, dass `kisten_id` wirklich entfernt ist und führe zusätzlich `select pg_notify('pgrst', 'reload schema');` aus.
-
----
-
-Wenn du willst, kann ich zusätzlich:
-- eine Version ohne Seeds erstellen,
-- eine Migration von alten Tabellen auf die neuen Namen vorbereiten,
-- oder die App auf private Buckets umstellen.
