@@ -72,6 +72,32 @@ const budgetKategorienFürFilter = [
   ...Object.keys(budgetKategorieIcons),
 ];
 
+const getLocalDateInputValue = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const normalizeDateInputValue = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value.slice(0, 10);
+
+  const parsedDate = new Date(value);
+  if (Number.isNaN(parsedDate.getTime())) return "";
+  return getLocalDateInputValue(parsedDate);
+};
+
+const formatDateForDisplay = (value) => {
+  const normalizedValue = normalizeDateInputValue(value);
+  if (!normalizedValue) return "";
+
+  const [year, month, day] = normalizedValue.split("-").map(Number);
+  if (!year || !month || !day) return normalizedValue;
+
+  return new Date(year, month - 1, day).toLocaleDateString("de-DE");
+};
+
 const BudgetTracker = ({ session }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -81,7 +107,7 @@ const BudgetTracker = ({ session }) => {
   const [beschreibung, setBeschreibung] = useState("");
   const [kategorie, setKategorie] = useState("Transport"); // Standard-Kategorie
   const [geplanterBetrag, setGeplanterBetrag] = useState("");
-  const [datum, setDatum] = useState(new Date().toISOString().slice(0, 10));
+  const [datum, setDatum] = useState(getLocalDateInputValue());
   const [lieferdatum, setLieferdatum] = useState("");
   const [bereitsBezahlt, setBereitsBezahlt] = useState("");
   const [vollBezahlt, setVollBezahlt] = useState(false);
@@ -96,7 +122,7 @@ const BudgetTracker = ({ session }) => {
   const [showTeilzahlungModalFor, setShowTeilzahlungModalFor] = useState(null);
   const [teilzahlungBetrag, setTeilzahlungBetrag] = useState("");
   const [teilzahlungDatum, setTeilzahlungDatum] = useState(
-    new Date().toISOString().slice(0, 10)
+    getLocalDateInputValue()
   );
   const [teilzahlungNotiz, setTeilzahlungNotiz] = useState("");
   const userId = session?.user?.id;
@@ -106,7 +132,7 @@ const BudgetTracker = ({ session }) => {
     setBeschreibung("");
     setKategorie("Transport");
     setGeplanterBetrag("");
-    setDatum(new Date().toISOString().slice(0, 10));
+    setDatum(getLocalDateInputValue());
     setLieferdatum("");
     setBereitsBezahlt("");
     setVollBezahlt(false);
@@ -207,7 +233,9 @@ const BudgetTracker = ({ session }) => {
       setGeplanterBetrag(betrag ? betrag.toString() : "");
       setKategorie(itemKat || "Sonstiges");
       // setTyp(itemTyp || "Ausgabe"); // Entfernt
-      setDatum(itemDatum || new Date().toISOString().slice(0, 10));
+      setDatum(
+        itemDatum ? normalizeDateInputValue(itemDatum) : getLocalDateInputValue()
+      );
       setLieferdatum(""); // Lieferdatum ist nicht Teil des übergebenen Objekts
       setBereitsBezahlt("");
       setVollBezahlt(false);
@@ -282,8 +310,8 @@ const BudgetTracker = ({ session }) => {
     setBeschreibung(item.beschreibung);
     setKategorie(item.kategorie);
     setGeplanterBetrag(item.betrag.toString());
-    setDatum(item.datum);
-    setLieferdatum(item.lieferdatum || "");
+    setDatum(normalizeDateInputValue(item.datum) || getLocalDateInputValue());
+    setLieferdatum(normalizeDateInputValue(item.lieferdatum));
     setBereitsBezahlt(
       summeBisherGezahlt > 0 ? summeBisherGezahlt.toString() : ""
     );
@@ -308,7 +336,8 @@ const BudgetTracker = ({ session }) => {
       alert("Nicht eingeloggt.");
       return;
     }
-    if (!beschreibung || !geplanterBetrag || !datum) {
+    const normalizedDatum = normalizeDateInputValue(datum);
+    if (!beschreibung || !geplanterBetrag || !normalizedDatum) {
       alert("Beschreibung, Betrag, Datum Pflicht.");
       return;
     }
@@ -332,8 +361,8 @@ const BudgetTracker = ({ session }) => {
       beschreibung,
       kategorie,
       betrag: geplanterBetragWert,
-      datum,
-      lieferdatum: lieferdatum || null,
+      datum: normalizedDatum,
+      lieferdatum: normalizeDateInputValue(lieferdatum) || null,
       user_id: userId,
       // typ: typ || "Ausgabe", // Entfernt, da nicht in DB und nicht benötigt
     };
@@ -356,14 +385,14 @@ const BudgetTracker = ({ session }) => {
           const { error: teilzahlungError } = await supabase
             .from("budget_teilzahlungen")
             .insert([
-              {
-                user_id: userId,
-                posten_id: insertedPosten.id,
-                betrag_teilzahlung: initialBezahlt,
-                datum_teilzahlung: new Date().toISOString().slice(0, 10),
-                notiz_teilzahlung: "Initialzahlung bei Erstellung",
-              },
-            ]);
+                {
+                  user_id: userId,
+                  posten_id: insertedPosten.id,
+                  betrag_teilzahlung: initialBezahlt,
+                  datum_teilzahlung: getLocalDateInputValue(),
+                  notiz_teilzahlung: "Initialzahlung bei Erstellung",
+                },
+              ]);
 
           if (teilzahlungError) {
             await supabase
@@ -405,7 +434,7 @@ const BudgetTracker = ({ session }) => {
   const openTeilzahlungModal = (postId) => {
     if (!userId) return;
     setTeilzahlungBetrag("");
-    setTeilzahlungDatum(new Date().toISOString().slice(0, 10));
+    setTeilzahlungDatum(getLocalDateInputValue());
     setTeilzahlungNotiz("");
     setShowTeilzahlungModalFor(postId);
   };
@@ -477,7 +506,12 @@ const BudgetTracker = ({ session }) => {
       return;
     }
 
-    const dateParts = item.lieferdatum.split("-").map(Number); // YYYY-MM-DD
+    const normalizedLieferdatum = normalizeDateInputValue(item.lieferdatum);
+    if (!normalizedLieferdatum) {
+      alert("Ungültiges Lieferdatum. Bitte Datum im Budgetposten prüfen.");
+      return;
+    }
+    const dateParts = normalizedLieferdatum.split("-").map(Number); // YYYY-MM-DD
 
     const eventDetails = {
       title: `Lieferung: ${item.beschreibung}`,
@@ -923,11 +957,9 @@ const BudgetTracker = ({ session }) => {
                                     : "#374151", // text-light-text-secondary
                               }}
                             >
-                              {new Date(p.datum).toLocaleDateString("de-DE")}
+                              {formatDateForDisplay(p.datum)}
                               {p.lieferdatum &&
-                                ` / ${new Date(
-                                  p.lieferdatum
-                                ).toLocaleDateString("de-DE")}`}
+                                ` / ${formatDateForDisplay(p.lieferdatum)}`}
                             </td>
                             <td className="px-2 py-1">
                               <div className="flex items-center gap-1">
@@ -1002,11 +1034,11 @@ const BudgetTracker = ({ session }) => {
                             </p>
                             <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
                               Fällig:{" "}
-                              {new Date(p.datum).toLocaleDateString("de-DE")}
+                              {formatDateForDisplay(p.datum)}
                               {p.lieferdatum &&
-                                ` / Lieferung: ${new Date(
+                                ` / Lieferung: ${formatDateForDisplay(
                                   p.lieferdatum
-                                ).toLocaleDateString("de-DE")}`}
+                                )}`}
                             </p>
                           </div>
                         </div>
@@ -1071,9 +1103,7 @@ const BudgetTracker = ({ session }) => {
                                 className="flex justify-between items-center group text-[11px]"
                               >
                                 <span>
-                                  {new Date(
-                                    tz.datum_teilzahlung
-                                  ).toLocaleDateString("de-DE")}
+                                  {formatDateForDisplay(tz.datum_teilzahlung)}
                                   :{" "}
                                   {formatGermanCurrency(tz.betrag_teilzahlung)}€
                                   {tz.notiz_teilzahlung ? (
