@@ -343,6 +343,49 @@ const wiederholungOptionen = [
   "Jährlich",
 ];
 
+const formatDateTimeLocalValue = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
+const parseDateTimeLocalToIso = (value) => {
+  if (!value) return null;
+
+  const [datePart, timePart] = value.split("T");
+  if (!datePart || !timePart) return null;
+
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+
+  if ([year, month, day, hours, minutes].some((part) => Number.isNaN(part))) {
+    return null;
+  }
+
+  const localDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+  if (Number.isNaN(localDate.getTime())) return null;
+
+  if (
+    localDate.getFullYear() !== year ||
+    localDate.getMonth() !== month - 1 ||
+    localDate.getDate() !== day ||
+    localDate.getHours() !== hours ||
+    localDate.getMinutes() !== minutes
+  ) {
+    return null;
+  }
+
+  return localDate.toISOString();
+};
+
 const TodoListenManager = ({ session }) => {
   const [userId, setUserId] = useState(null);
   const [aufgaben, setAufgaben] = useState([]);
@@ -614,20 +657,8 @@ const TodoListenManager = ({ session }) => {
     setBeschreibung(aufgabe.beschreibung);
     setKategorie(aufgabe.kategorie);
     setPrioritaet(aufgabe.prioritaet);
-
-    if (aufgabe.faelligkeitsdatum) {
-      const localDate = new Date(aufgabe.faelligkeitsdatum);
-      const year = localDate.getFullYear();
-      const month = (localDate.getMonth() + 1).toString().padStart(2, "0");
-      const day = localDate.getDate().toString().padStart(2, "0");
-      const hours = localDate.getHours().toString().padStart(2, "0");
-      const minutes = localDate.getMinutes().toString().padStart(2, "0");
-      setFaelligkeitsdatum(`${year}-${month}-${day}T${hours}:${minutes}`);
-    } else {
-      setFaelligkeitsdatum("");
-    }
-
-    setErinnerungsDatum(aufgabe.erinnerungs_datum || "");
+    setFaelligkeitsdatum(formatDateTimeLocalValue(aufgabe.faelligkeitsdatum));
+    setErinnerungsDatum(formatDateTimeLocalValue(aufgabe.erinnerungs_datum));
     setAnhaengeText(
       Array.isArray(aufgabe.anhaenge)
         ? aufgabe.anhaenge.join(", ")
@@ -657,17 +688,30 @@ const TodoListenManager = ({ session }) => {
       alert("Beschreibung & Kategorie Pflicht.");
       return;
     }
+
+    const faelligkeitsdatumIso = faelligkeitsdatum
+      ? parseDateTimeLocalToIso(faelligkeitsdatum)
+      : null;
+    if (faelligkeitsdatum && !faelligkeitsdatumIso) {
+      alert("Ungültiges Fälligkeitsdatum. Bitte Eingabe prüfen.");
+      return;
+    }
+
+    const erinnerungsDatumIso = erinnerungsDatum
+      ? parseDateTimeLocalToIso(erinnerungsDatum)
+      : null;
+    if (erinnerungsDatum && !erinnerungsDatumIso) {
+      alert("Ungültiges Erinnerungsdatum. Bitte Eingabe prüfen.");
+      return;
+    }
+
     const aufgabeDaten = {
       user_id: userId,
       beschreibung,
       kategorie,
       prioritaet,
-      faelligkeitsdatum: faelligkeitsdatum
-        ? new Date(faelligkeitsdatum).toISOString()
-        : null,
-      erinnerungs_datum: erinnerungsDatum
-        ? new Date(erinnerungsDatum).toISOString()
-        : null,
+      faelligkeitsdatum: faelligkeitsdatumIso,
+      erinnerungs_datum: erinnerungsDatumIso,
       anhaenge: anhaengeText
         ? anhaengeText
             .split(",")
