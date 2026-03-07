@@ -4,7 +4,7 @@
     {
       "name": "React Dev Server",
       "runtimeExecutable": "cmd",
-      "runtimeArgs": ["/c", "cd umzugshelfer-pwa && npm start"],
+      "runtimeArgs": ["/c", "cd umzugshelfer-pwa && npm install --prefer-offline && npm start"],
       "port": 3000
     },
     {

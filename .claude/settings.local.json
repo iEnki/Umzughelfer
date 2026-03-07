@@ -7,7 +7,15 @@
       "Bash(node_modules/.bin/react-scripts build)",
       "mcp__Claude_Preview__preview_start",
       "Bash(timeout 15)",
-      "Bash(powershell -Command \"Start-Sleep -Seconds 20; Write-Host ''done''\")"
+      "Bash(powershell -Command \"Start-Sleep -Seconds 20; Write-Host ''done''\")",
+      "Bash(npm run build -- --no-eslint)",
+      "Bash(ls \"E:\\\\Code Projekte\\\\umzughelfer\\\\umzugshelfer-pwa\\\\node_modules\\\\.bin\"\" 2>&1 | head -5 || echo \"NO NODE_MODULES \")",
+      "Bash(cmd /c \"dir /b \"\"E:\\\\Code Projekte\\\\umzughelfer\\\\umzugshelfer-pwa\\\\node_modules\\\\.bin\"\"\")",
+      "Bash(cmd /c \"cd /d \"\"E:\\\\Code Projekte\\\\umzughelfer\\\\umzugshelfer-pwa\"\" && npm install 2>&1\")",
+      "Bash(cmd /c \"cd /d \"\"E:\\\\Code Projekte\\\\umzughelfer\\\\umzugshelfer-pwa\"\" && npm install\")",
+      "Bash(cmd /c \"cd /d \"\"E:\\\\Code Projekte\\\\umzughelfer\\\\umzugshelfer-pwa\"\" && npm install && echo DONE\")",
+      "Bash(cmd /c \"where node && where npm\")",
+      "Bash(cmd /c \"where node 2>&1 && echo NODE_FOUND || echo NODE_NOT_FOUND\")"
     ]
   }
 }

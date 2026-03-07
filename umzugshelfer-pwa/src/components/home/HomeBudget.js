@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { DollarSign, Plus, Edit2, Trash2, X, Loader2, AlertCircle } from "lucide-react";
+import { DollarSign, Plus, Edit2, Trash2, X, Loader2, AlertCircle, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "../../supabaseClient";
 
 const HOME_KATEGORIEN = ["Lebensmittel", "Haushalt", "Reparaturen", "Abonnements", "Versicherungen", "Einrichtung", "Rücklagen", "Sonstiges"];
+
+const MONATE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
 const BudgetForm = ({ initial, onSpeichern, onAbbrechen }) => {
   const [form, setForm] = useState({
@@ -51,6 +53,12 @@ const HomeBudget = ({ session }) => {
   const [fehler, setFehler] = useState(null);
   const [kategFilter, setKategFilter] = useState("");
 
+  // Zeitraum-Filter
+  const [zeitraum, setZeitraum] = useState("monat"); // "alle" | "monat" | "jahr"
+  const today = new Date();
+  const [selJahr, setSelJahr] = useState(today.getFullYear());
+  const [selMonat, setSelMonat] = useState(today.getMonth()); // 0-based
+
   const ladeDaten = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
@@ -89,14 +97,48 @@ const HomeBudget = ({ session }) => {
     ladeDaten();
   };
 
-  const gefiltertPosten = posten.filter((p) => !kategFilter || p.kategorie === kategFilter);
+  const navigiereMonat = (delta) => {
+    let m = selMonat + delta;
+    let j = selJahr;
+    if (m < 0) { m = 11; j--; }
+    if (m > 11) { m = 0; j++; }
+    setSelMonat(m);
+    setSelJahr(j);
+  };
+
+  // Zeitraum-Filter anwenden
+  const nachZeitraumGefiltert = posten.filter((p) => {
+    if (zeitraum === "alle" || !p.datum) return true;
+    const d = new Date(p.datum);
+    if (zeitraum === "jahr") return d.getFullYear() === selJahr;
+    return d.getFullYear() === selJahr && d.getMonth() === selMonat;
+  });
+
+  const gefiltertPosten = nachZeitraumGefiltert.filter((p) => !kategFilter || p.kategorie === kategFilter);
   const gesamt = gefiltertPosten.reduce((s, p) => s + Number(p.betrag), 0);
 
-  // Ausgaben nach Kategorie für Übersicht
+  // Ausgaben nach Kategorie (im gewählten Zeitraum)
   const nachKategorie = HOME_KATEGORIEN.map((k) => ({
     name: k,
-    summe: posten.filter((p) => p.kategorie === k).reduce((s, p) => s + Number(p.betrag), 0),
+    summe: nachZeitraumGefiltert.filter((p) => p.kategorie === k).reduce((s, p) => s + Number(p.betrag), 0),
   })).filter((k) => k.summe > 0).sort((a, b) => b.summe - a.summe);
+
+  // Monatliche Übersicht für Jahresansicht
+  const monatsSummen = Array.from({ length: 12 }, (_, i) => ({
+    monat: MONATE[i],
+    summe: posten.filter((p) => {
+      if (!p.datum) return false;
+      const d = new Date(p.datum);
+      return d.getFullYear() === selJahr && d.getMonth() === i;
+    }).reduce((s, p) => s + Number(p.betrag), 0),
+  }));
+  const maxMonatsSumme = Math.max(...monatsSummen.map((m) => m.summe), 1);
+
+  const zeitraumLabel = zeitraum === "alle"
+    ? "Alle Einträge"
+    : zeitraum === "monat"
+    ? `${MONATE[selMonat]} ${selJahr}`
+    : `Jahr ${selJahr}`;
 
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-light-text-secondary dark:text-dark-text-secondary" /></div>;
 
@@ -114,11 +156,67 @@ const HomeBudget = ({ session }) => {
 
       {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
 
+      {/* Zeitraum-Tabs */}
+      <div className="flex items-center gap-2 mb-4">
+        <Calendar size={15} className="text-light-text-secondary dark:text-dark-text-secondary flex-shrink-0" />
+        {["monat", "jahr", "alle"].map((z) => (
+          <button key={z} onClick={() => setZeitraum(z)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${zeitraum === z ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>
+            {z === "monat" ? "Monat" : z === "jahr" ? "Jahr" : "Alle"}
+          </button>
+        ))}
+
+        {/* Jahres-Navigation */}
+        {zeitraum !== "alle" && (
+          <div className="flex items-center gap-1 ml-auto">
+            {zeitraum === "monat" && (
+              <button onClick={() => navigiereMonat(-1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+                <ChevronLeft size={14} />
+              </button>
+            )}
+            {zeitraum === "jahr" && (
+              <button onClick={() => setSelJahr((y) => y - 1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+                <ChevronLeft size={14} />
+              </button>
+            )}
+            <span className="text-sm font-medium text-light-text-main dark:text-dark-text-main px-2 min-w-[90px] text-center">{zeitraumLabel}</span>
+            {zeitraum === "monat" && (
+              <button onClick={() => navigiereMonat(1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+                <ChevronRight size={14} />
+              </button>
+            )}
+            {zeitraum === "jahr" && (
+              <button onClick={() => setSelJahr((y) => y + 1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+                <ChevronRight size={14} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Jahres-Balkendiagramm */}
+      {zeitraum === "jahr" && (
+        <div className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-4 mb-5">
+          <p className="text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-3 uppercase tracking-wider">Monatsübersicht {selJahr}</p>
+          <div className="flex items-end gap-1 h-20">
+            {monatsSummen.map((m, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1" onClick={() => { setSelMonat(i); setZeitraum("monat"); }} style={{ cursor: "pointer" }}>
+                <div
+                  className="w-full rounded-t bg-green-500/70 hover:bg-green-500 transition-all"
+                  style={{ height: `${(m.summe / maxMonatsSumme) * 100}%`, minHeight: m.summe > 0 ? "4px" : "0" }}
+                  title={`${m.monat}: ${m.summe.toFixed(0)} €`}
+                />
+                <span className="text-[9px] text-light-text-secondary dark:text-dark-text-secondary">{m.monat}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Übersicht nach Kategorie */}
       {nachKategorie.length > 0 && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
           {nachKategorie.slice(0, 4).map((k) => (
-            <div key={k.name} className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 text-center">
+            <div key={k.name} className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 text-center cursor-pointer hover:border-green-500/40 transition-colors" onClick={() => setKategFilter(kategFilter === k.name ? "" : k.name)}>
               <div className="text-lg font-bold text-light-text-main dark:text-dark-text-main">{k.summe.toFixed(2)} €</div>
               <div className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{k.name}</div>
             </div>
@@ -128,7 +226,7 @@ const HomeBudget = ({ session }) => {
 
       {/* Gesamt */}
       <div className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-4 mb-5 flex items-center justify-between">
-        <span className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">Gesamt {kategFilter ? `(${kategFilter})` : ""}</span>
+        <span className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">Gesamt {kategFilter ? `(${kategFilter})` : ""} · {zeitraumLabel}</span>
         <span className="text-xl font-bold text-light-text-main dark:text-dark-text-main">{gesamt.toFixed(2)} €</span>
       </div>
 
@@ -144,7 +242,7 @@ const HomeBudget = ({ session }) => {
       {gefiltertPosten.length === 0 ? (
         <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
           <DollarSign size={40} className="mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Noch keine Ausgaben</p>
+          <p className="text-sm">Keine Ausgaben im gewählten Zeitraum</p>
         </div>
       ) : (
         <div className="space-y-2">

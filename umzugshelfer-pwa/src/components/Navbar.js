@@ -31,17 +31,30 @@ const Navbar = ({ session, setSession }) => {
     setSuchLaed(true);
     const q = begriff.trim().toLowerCase();
     try {
-      const [kontakteRes, todosRes, kistenRes, dokRes] = await Promise.all([
-        supabase.from("kontakte").select("id, name, typ").eq("user_id", userId).ilike("name", `%${q}%`).limit(4),
-        supabase.from("todo_aufgaben").select("id, beschreibung, kategorie").eq("user_id", userId).ilike("beschreibung", `%${q}%`).limit(4),
-        supabase.from("pack_kisten").select("id, name, raum_neu").eq("user_id", userId).ilike("name", `%${q}%`).limit(4),
-        supabase.from("dokumente").select("id, dateiname").eq("user_id", userId).ilike("dateiname", `%${q}%`).limit(4),
-      ]);
       const ergebnisse = [];
-      (kontakteRes.data || []).forEach((k) => ergebnisse.push({ modul: "Kontakt", text: k.name, sub: k.typ, link: "/kontakte" }));
-      (todosRes.data || []).forEach((t) => ergebnisse.push({ modul: "To-Do", text: t.beschreibung, sub: t.kategorie, link: "/todos" }));
-      (kistenRes.data || []).forEach((k) => ergebnisse.push({ modul: "Kiste", text: k.name, sub: k.raum_neu, link: "/packliste" }));
-      (dokRes.data || []).forEach((d) => ergebnisse.push({ modul: "Dokument", text: d.dateiname, sub: null, link: "/dokumente" }));
+      if (appMode === "home") {
+        const [objRes, vorratRes, geraetRes, todoRes] = await Promise.all([
+          supabase.from("home_objekte").select("id, name, status").eq("user_id", userId).ilike("name", `%${q}%`).limit(3),
+          supabase.from("home_vorraete").select("id, name, kategorie").eq("user_id", userId).ilike("name", `%${q}%`).limit(3),
+          supabase.from("home_geraete").select("id, name, hersteller").eq("user_id", userId).ilike("name", `%${q}%`).limit(3),
+          supabase.from("todo_aufgaben").select("id, beschreibung, kategorie").eq("user_id", userId).in("app_modus", ["home", "beides"]).ilike("beschreibung", `%${q}%`).limit(3),
+        ]);
+        (objRes.data || []).forEach((o) => ergebnisse.push({ modul: "Inventar", text: o.name, sub: o.status, link: "/home/inventar" }));
+        (vorratRes.data || []).forEach((v) => ergebnisse.push({ modul: "Vorrat", text: v.name, sub: v.kategorie, link: "/home/vorraete" }));
+        (geraetRes.data || []).forEach((g) => ergebnisse.push({ modul: "Gerät", text: g.name, sub: g.hersteller, link: "/home/geraete" }));
+        (todoRes.data || []).forEach((t) => ergebnisse.push({ modul: "Aufgabe", text: t.beschreibung, sub: t.kategorie, link: "/home/aufgaben" }));
+      } else {
+        const [kontakteRes, todosRes, kistenRes, dokRes] = await Promise.all([
+          supabase.from("kontakte").select("id, name, typ").eq("user_id", userId).ilike("name", `%${q}%`).limit(4),
+          supabase.from("todo_aufgaben").select("id, beschreibung, kategorie").eq("user_id", userId).ilike("beschreibung", `%${q}%`).limit(4),
+          supabase.from("pack_kisten").select("id, name, raum_neu").eq("user_id", userId).ilike("name", `%${q}%`).limit(4),
+          supabase.from("dokumente").select("id, dateiname").eq("user_id", userId).ilike("dateiname", `%${q}%`).limit(4),
+        ]);
+        (kontakteRes.data || []).forEach((k) => ergebnisse.push({ modul: "Kontakt", text: k.name, sub: k.typ, link: "/kontakte" }));
+        (todosRes.data || []).forEach((t) => ergebnisse.push({ modul: "To-Do", text: t.beschreibung, sub: t.kategorie, link: "/todos" }));
+        (kistenRes.data || []).forEach((k) => ergebnisse.push({ modul: "Kiste", text: k.name, sub: k.raum_neu, link: "/packliste" }));
+        (dokRes.data || []).forEach((d) => ergebnisse.push({ modul: "Dokument", text: d.dateiname, sub: null, link: "/dokumente" }));
+      }
       setSuchergebnisse(ergebnisse);
       setSuchOffen(ergebnisse.length > 0);
     } catch (err) {
@@ -49,7 +62,7 @@ const Navbar = ({ session, setSession }) => {
     } finally {
       setSuchLaed(false);
     }
-  }, [userId]);
+  }, [userId, appMode]);
 
   const handleSuchInput = (e) => {
     const val = e.target.value;

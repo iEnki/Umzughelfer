@@ -362,7 +362,17 @@ create policy storage_home_fotos_delete on storage.objects for delete
 
 ---
 
-## 4. Schema neu laden
+## 4. Phase 2 Erweiterungen
+
+```sql
+-- Dokumenten-Verknüpfung an home_geraete (Phase 2)
+alter table public.home_geraete
+  add column if not exists verknuepfte_dokument_ids uuid[] default '{}';
+```
+
+---
+
+## 5. Schema neu laden
 
 ```sql
 select pg_notify('pgrst', 'reload schema');

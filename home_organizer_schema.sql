@@ -1,26 +1,26 @@
--- Home Organizer Schema for Supabase
--- Erstellt/erweitert Tabellen, Policies, Trigger und Storage-Konfiguration
+-- ============================================================
+-- HOME SCHEMA MIGRATION
+-- ============================================================
 
--- =========================================================
--- 1. Neue Tabellen anlegen
--- =========================================================
+
+-- 1. home_orte: Hauptstandorte (Wohnung, Haus, Lager, etc.)
+-- ============================================================
 
 create table if not exists public.home_orte (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  name text not null,
-  typ text default 'Wohnung',
-  adresse text,
-  notizen text,
-  farbe text,
-  symbol text,
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid references auth.users(id) on delete cascade not null,
+  name       text not null,
+  typ        text default 'Wohnung',
+  adresse    text,
+  notizen    text,
+  farbe      text,
+  symbol     text,
   migriert_von_kiste_id uuid references public.pack_kisten(id) on delete set null,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
-create index if not exists idx_home_orte_user_id
-  on public.home_orte(user_id);
+create index if not exists idx_home_orte_user_id on public.home_orte(user_id);
 
 drop trigger if exists set_home_orte_updated_at on public.home_orte;
 create trigger set_home_orte_updated_at
@@ -38,31 +38,28 @@ create policy home_orte_crud_own
 
 -- 2. home_lagerorte: Sub-Standorte (Regal, Schrank, Lade, Kiste, Box)
 --    Hierarchie via parent_id (Selbstreferenz)
+-- ============================================================
+
 create table if not exists public.home_lagerorte (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  ort_id uuid references public.home_orte(id) on delete cascade not null,
-  parent_id uuid references public.home_lagerorte(id) on delete cascade,
-  name text not null,
-  typ text default 'Regal',
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid references auth.users(id) on delete cascade not null,
+  ort_id       uuid references public.home_orte(id) on delete cascade not null,
+  parent_id    uuid references public.home_lagerorte(id) on delete cascade,
+  name         text not null,
+  typ          text default 'Regal',
   beschreibung text,
   qr_code_wert text unique,
-  foto_pfad text,
-  position integer default 0,
-  farbe text,
+  foto_pfad    text,
+  position     integer default 0,
+  farbe        text,
   migriert_von_kiste_id uuid references public.pack_kisten(id) on delete set null,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
 );
 
-create index if not exists idx_home_lagerorte_user_id
-  on public.home_lagerorte(user_id);
-
-create index if not exists idx_home_lagerorte_ort_id
-  on public.home_lagerorte(ort_id);
-
-create index if not exists idx_home_lagerorte_parent_id
-  on public.home_lagerorte(parent_id);
+create index if not exists idx_home_lagerorte_user_id  on public.home_lagerorte(user_id);
+create index if not exists idx_home_lagerorte_ort_id   on public.home_lagerorte(ort_id);
+create index if not exists idx_home_lagerorte_parent_id on public.home_lagerorte(parent_id);
 
 drop trigger if exists set_home_lagerorte_updated_at on public.home_lagerorte;
 create trigger set_home_lagerorte_updated_at
@@ -80,45 +77,38 @@ create policy home_lagerorte_crud_own
 
 -- 3. home_objekte: Inventarobjekte
 --    Status: in_verwendung | eingelagert | verliehen | defekt | entsorgt
+-- ============================================================
+
 create table if not exists public.home_objekte (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  lagerort_id uuid references public.home_lagerorte(id) on delete set null,
-  ort_id uuid references public.home_orte(id) on delete set null,
-  name text not null,
-  beschreibung text,
-  kategorie text,
-  status text default 'in_verwendung',
-  menge integer default 1,
-  tags text[],
-  fotos text[],
-  seriennummer text,
-  kaufdatum date,
-  kaufpreis numeric(10,2),
-  garantie_bis date,
-  zugriffshaeufigkeit text default 'selten',
-  zuletzt_zugegriffen timestamptz,
-  verliehen_an text,
-  verliehen_am date,
+  id                         uuid primary key default gen_random_uuid(),
+  user_id                    uuid references auth.users(id) on delete cascade not null,
+  lagerort_id                uuid references public.home_lagerorte(id) on delete set null,
+  ort_id                     uuid references public.home_orte(id) on delete set null,
+  name                       text not null,
+  beschreibung               text,
+  kategorie                  text,
+  status                     text default 'in_verwendung',
+  menge                      integer default 1,
+  tags                       text[],
+  fotos                      text[],
+  seriennummer               text,
+  kaufdatum                  date,
+  kaufpreis                  numeric(10,2),
+  garantie_bis               date,
+  zugriffshaeufigkeit        text default 'selten',
+  zuletzt_zugegriffen        timestamptz,
+  verliehen_an               text,
+  verliehen_am               date,
   migriert_von_gegenstand_id uuid references public.pack_gegenstaende(id) on delete set null,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  created_at                 timestamptz default now(),
+  updated_at                 timestamptz default now()
 );
 
-create index if not exists idx_home_objekte_user_id
-  on public.home_objekte(user_id);
-
-create index if not exists idx_home_objekte_lagerort_id
-  on public.home_objekte(lagerort_id);
-
-create index if not exists idx_home_objekte_ort_id
-  on public.home_objekte(ort_id);
-
-create index if not exists idx_home_objekte_status
-  on public.home_objekte(status);
-
-create index if not exists idx_home_objekte_tags
-  on public.home_objekte using gin(tags);
+create index if not exists idx_home_objekte_user_id    on public.home_objekte(user_id);
+create index if not exists idx_home_objekte_lagerort_id on public.home_objekte(lagerort_id);
+create index if not exists idx_home_objekte_ort_id     on public.home_objekte(ort_id);
+create index if not exists idx_home_objekte_status     on public.home_objekte(status);
+create index if not exists idx_home_objekte_tags       on public.home_objekte using gin(tags);
 
 drop trigger if exists set_home_objekte_updated_at on public.home_objekte;
 create trigger set_home_objekte_updated_at
@@ -135,23 +125,24 @@ create policy home_objekte_crud_own
 
 
 -- 4. home_vorraete: Haushaltsvorräte mit Mindestbestand
+-- ============================================================
+
 create table if not exists public.home_vorraete (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  lagerort_id uuid references public.home_lagerorte(id) on delete set null,
-  name text not null,
-  kategorie text default 'Haushalt',
-  einheit text default 'Stück',
-  bestand numeric(10,2) default 0,
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid references auth.users(id) on delete cascade not null,
+  lagerort_id  uuid references public.home_lagerorte(id) on delete set null,
+  name         text not null,
+  kategorie    text default 'Haushalt',
+  einheit      text default 'Stück',
+  bestand      numeric(10,2) default 0,
   mindestmenge numeric(10,2) default 1,
-  ablaufdatum date,
-  notizen text,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  ablaufdatum  date,
+  notizen      text,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
 );
 
-create index if not exists idx_home_vorraete_user_id
-  on public.home_vorraete(user_id);
+create index if not exists idx_home_vorraete_user_id on public.home_vorraete(user_id);
 
 drop trigger if exists set_home_vorraete_updated_at on public.home_vorraete;
 create trigger set_home_vorraete_updated_at
@@ -168,26 +159,25 @@ create policy home_vorraete_crud_own
 
 
 -- 5. home_einkaufliste: Einkaufsliste (manuell + auto aus Vorräten)
+-- ============================================================
+
 create table if not exists public.home_einkaufliste (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  vorrat_id uuid references public.home_vorraete(id) on delete set null,
-  name text not null,
-  menge numeric(10,2) default 1,
-  einheit text default 'Stück',
-  kategorie text,
-  erledigt boolean default false,
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid references auth.users(id) on delete cascade not null,
+  vorrat_id   uuid references public.home_vorraete(id) on delete set null,
+  name        text not null,
+  menge       numeric(10,2) default 1,
+  einheit     text default 'Stück',
+  kategorie   text,
+  erledigt    boolean default false,
   erledigt_am timestamptz,
-  notizen text,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  notizen     text,
+  created_at  timestamptz default now(),
+  updated_at  timestamptz default now()
 );
 
-create index if not exists idx_home_einkaufliste_user_id
-  on public.home_einkaufliste(user_id);
-
-create index if not exists idx_home_einkaufliste_erledigt
-  on public.home_einkaufliste(erledigt);
+create index if not exists idx_home_einkaufliste_user_id  on public.home_einkaufliste(user_id);
+create index if not exists idx_home_einkaufliste_erledigt on public.home_einkaufliste(erledigt);
 
 drop trigger if exists set_home_einkaufliste_updated_at on public.home_einkaufliste;
 create trigger set_home_einkaufliste_updated_at
@@ -204,32 +194,32 @@ create policy home_einkaufliste_crud_own
 
 
 -- 6. home_geraete: Geräte- und Wartungsmanager
+-- ============================================================
+
 create table if not exists public.home_geraete (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  lagerort_id uuid references public.home_lagerorte(id) on delete set null,
-  name text not null,
-  hersteller text,
-  modell text,
-  seriennummer text,
-  kaufdatum date,
-  kaufpreis numeric(10,2),
-  garantie_bis date,
-  naechste_wartung date,
-  wartungsintervall_monate integer,
-  notizen text,
-  handbuch_pfad text,
-  foto_pfad text,
-  dokument_ids uuid[],
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  id                        uuid primary key default gen_random_uuid(),
+  user_id                   uuid references auth.users(id) on delete cascade not null,
+  lagerort_id               uuid references public.home_lagerorte(id) on delete set null,
+  name                      text not null,
+  hersteller                text,
+  modell                    text,
+  seriennummer              text,
+  kaufdatum                 date,
+  kaufpreis                 numeric(10,2),
+  garantie_bis              date,
+  naechste_wartung          date,
+  wartungsintervall_monate  integer,
+  notizen                   text,
+  handbuch_pfad             text,
+  foto_pfad                 text,
+  dokument_ids              uuid[],
+  verknuepfte_dokument_ids  uuid[] default '{}',
+  created_at                timestamptz default now(),
+  updated_at                timestamptz default now()
 );
 
-create index if not exists idx_home_geraete_user_id
-  on public.home_geraete(user_id);
-
-create index if not exists idx_home_geraete_naechste_wartung
-  on public.home_geraete(naechste_wartung);
+create index if not exists idx_home_geraete_user_id         on public.home_geraete(user_id);
+create index if not exists idx_home_geraete_naechste_wartung on public.home_geraete(naechste_wartung);
 
 drop trigger if exists set_home_geraete_updated_at on public.home_geraete;
 create trigger set_home_geraete_updated_at
@@ -246,26 +236,25 @@ create policy home_geraete_crud_own
 
 
 -- 7. home_wartungen: Wartungsprotokoll
+-- ============================================================
+
 create table if not exists public.home_wartungen (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  geraet_id uuid references public.home_geraete(id) on delete cascade not null,
-  datum date not null default current_date,
-  typ text default 'Wartung',
-  beschreibung text,
-  kosten numeric(10,2),
-  durchgefuehrt_von text,
+  id                   uuid primary key default gen_random_uuid(),
+  user_id              uuid references auth.users(id) on delete cascade not null,
+  geraet_id            uuid references public.home_geraete(id) on delete cascade not null,
+  datum                date not null default current_date,
+  typ                  text default 'Wartung',
+  beschreibung         text,
+  kosten               numeric(10,2),
+  durchgefuehrt_von    text,
   naechste_faelligkeit date,
-  notizen text,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  notizen              text,
+  created_at           timestamptz default now(),
+  updated_at           timestamptz default now()
 );
 
-create index if not exists idx_home_wartungen_user_id
-  on public.home_wartungen(user_id);
-
-create index if not exists idx_home_wartungen_geraet_id
-  on public.home_wartungen(geraet_id);
+create index if not exists idx_home_wartungen_user_id  on public.home_wartungen(user_id);
+create index if not exists idx_home_wartungen_geraet_id on public.home_wartungen(geraet_id);
 
 drop trigger if exists set_home_wartungen_updated_at on public.home_wartungen;
 create trigger set_home_wartungen_updated_at
@@ -282,24 +271,25 @@ create policy home_wartungen_crud_own
 
 
 -- 8. home_projekte: Haushaltsprojekte
+-- ============================================================
+
 create table if not exists public.home_projekte (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  name text not null,
-  typ text default 'Sonstiges',
-  status text default 'geplant',
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid references auth.users(id) on delete cascade not null,
+  name         text not null,
+  typ          text default 'Sonstiges',
+  status       text default 'geplant',
   beschreibung text,
-  startdatum date,
-  zieldatum date,
-  budget numeric(10,2),
-  farbe text,
-  notizen text,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
+  startdatum   date,
+  zieldatum    date,
+  budget       numeric(10,2),
+  farbe        text,
+  notizen      text,
+  created_at   timestamptz default now(),
+  updated_at   timestamptz default now()
 );
 
-create index if not exists idx_home_projekte_user_id
-  on public.home_projekte(user_id);
+create index if not exists idx_home_projekte_user_id on public.home_projekte(user_id);
 
 drop trigger if exists set_home_projekte_updated_at on public.home_projekte;
 create trigger set_home_projekte_updated_at
@@ -315,9 +305,9 @@ create policy home_projekte_crud_own
   with check (auth.uid() = user_id);
 
 
--- =========================================================
--- 2. Bestehende Tabellen erweitern
--- =========================================================
+-- ============================================================
+-- Bestehende Tabellen erweitern
+-- ============================================================
 
 -- todo_aufgaben: Modus + Projekt-Verknüpfung
 alter table public.todo_aufgaben
@@ -338,9 +328,9 @@ alter table public.user_profile
   add column if not exists app_modus text default 'umzug';
 
 
--- =========================================================
--- 3. Storage Bucket für Home-Fotos
--- =========================================================
+-- ============================================================
+-- Storage Bucket für Home-Fotos
+-- ============================================================
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
@@ -348,38 +338,34 @@ values (
   'home-fotos',
   false,
   10485760,
-  array['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  array['image/jpeg','image/png','image/gif','image/webp']
 )
 on conflict (id) do nothing;
 
 drop policy if exists storage_home_fotos_insert on storage.objects;
-create policy storage_home_fotos_insert
-  on storage.objects for insert
+create policy storage_home_fotos_insert on storage.objects for insert
   with check (
     bucket_id = 'home-fotos'
     and auth.uid()::text = (storage.foldername(name))[1]
   );
 
 drop policy if exists storage_home_fotos_select on storage.objects;
-create policy storage_home_fotos_select
-  on storage.objects for select
+create policy storage_home_fotos_select on storage.objects for select
   using (
     bucket_id = 'home-fotos'
     and auth.uid()::text = (storage.foldername(name))[1]
   );
 
 drop policy if exists storage_home_fotos_delete on storage.objects;
-create policy storage_home_fotos_delete
-  on storage.objects for delete
+create policy storage_home_fotos_delete on storage.objects for delete
   using (
     bucket_id = 'home-fotos'
     and auth.uid()::text = (storage.foldername(name))[1]
   );
 
 
--- =========================================================
--- 4. Schema neu laden
--- =========================================================
+-- ============================================================
+-- Schema neu laden
+-- ============================================================
 
 select pg_notify('pgrst', 'reload schema');
-

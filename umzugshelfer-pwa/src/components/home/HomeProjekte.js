@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FolderOpen, Plus, Edit2, Trash2, X, Loader2, AlertCircle } from "lucide-react";
+import { FolderOpen, Plus, Edit2, Trash2, X, Loader2, AlertCircle, ChevronDown, ChevronRight, CheckSquare, Square } from "lucide-react";
 import { supabase } from "../../supabaseClient";
 
 const TYPEN = ["Reorganisation", "Reparatur", "Saisonwechsel", "Renovierung", "Dekoration", "Anschaffung", "Sonstiges"];
@@ -68,17 +68,24 @@ const HomeProjekte = ({ session }) => {
   const userId = session?.user?.id;
   const [loading, setLoading] = useState(true);
   const [projekte, setProjekte] = useState([]);
+  const [todos, setTodos] = useState([]);
   const [modal, setModal] = useState(null);
   const [fehler, setFehler] = useState(null);
   const [statusFilter, setStatusFilter] = useState("");
+  const [expandedId, setExpandedId] = useState(null);
+  const [neuerTodoText, setNeuerTodoText] = useState("");
 
   const ladeDaten = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("home_projekte").select("*").eq("user_id", userId).order("created_at", { ascending: false });
-      if (error) throw error;
-      setProjekte(data || []);
+      const [projektRes, todoRes] = await Promise.all([
+        supabase.from("home_projekte").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+        supabase.from("todo_aufgaben").select("id, beschreibung, erledigt, home_projekt_id").eq("user_id", userId).not("home_projekt_id", "is", null),
+      ]);
+      if (projektRes.error) throw projektRes.error;
+      setProjekte(projektRes.data || []);
+      setTodos(todoRes.data || []);
     } catch (e) {
       setFehler("Fehler beim Laden.");
     } finally {
@@ -103,6 +110,30 @@ const HomeProjekte = ({ session }) => {
     if (!window.confirm("Projekt löschen?")) return;
     await supabase.from("home_projekte").delete().eq("id", id);
     ladeDaten();
+  };
+
+  const toggleTodo = async (todoId, erledigt) => {
+    await supabase.from("todo_aufgaben").update({ erledigt: !erledigt }).eq("id", todoId);
+    setTodos((prev) => prev.map((t) => t.id === todoId ? { ...t, erledigt: !erledigt } : t));
+  };
+
+  const todoHinzufuegen = async (projektId) => {
+    const text = neuerTodoText.trim();
+    if (!text) return;
+    const { data } = await supabase.from("todo_aufgaben").insert({
+      user_id: userId,
+      beschreibung: text,
+      home_projekt_id: projektId,
+      app_modus: "home",
+      erledigt: false,
+    }).select("id, beschreibung, erledigt, home_projekt_id").single();
+    if (data) setTodos((prev) => [...prev, data]);
+    setNeuerTodoText("");
+  };
+
+  const todoLoeschen = async (todoId) => {
+    await supabase.from("todo_aufgaben").delete().eq("id", todoId);
+    setTodos((prev) => prev.filter((t) => t.id !== todoId));
   };
 
   const gefiltertProjekte = projekte.filter((p) => !statusFilter || p.status === statusFilter);
@@ -138,27 +169,94 @@ const HomeProjekte = ({ session }) => {
           <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"><Plus size={14} />Erstes Projekt anlegen</button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {gefiltertProjekte.map((p) => (
-            <div key={p.id} className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-4 group">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm text-light-text-main dark:text-dark-text-main truncate">{p.name}</h3>
-                  <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{p.typ}</span>
+        <div className="space-y-3">
+          {gefiltertProjekte.map((p) => {
+            const projektTodos = todos.filter((t) => t.id && t.home_projekt_id === p.id);
+            const erledigtCount = projektTodos.filter((t) => t.erledigt).length;
+            const isExpanded = expandedId === p.id;
+            const fortschritt = projektTodos.length > 0 ? Math.round((erledigtCount / projektTodos.length) * 100) : null;
+
+            return (
+              <div key={p.id} className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border overflow-hidden">
+                {/* Projekt-Header */}
+                <div className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-light-text-main dark:text-dark-text-main truncate">{p.name}</h3>
+                      <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{p.typ}</span>
+                    </div>
+                    <div className="flex gap-1 ml-2">
+                      <button onClick={() => setModal(p)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500"><Edit2 size={12} /></button>
+                      <button onClick={() => loesche(p.id)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500"><Trash2 size={12} /></button>
+                    </div>
+                  </div>
+                  {p.beschreibung && <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-3 line-clamp-2">{p.beschreibung}</p>}
+                  <div className="flex items-center justify-between">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_FARBEN[p.status]}`}>{STATUS_LABEL[p.status]}</span>
+                    <div className="flex items-center gap-3 text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                      {p.budget && <span>Budget: {Number(p.budget).toFixed(0)} €</span>}
+                      {p.zieldatum && <span>Ziel: {p.zieldatum}</span>}
+                    </div>
+                  </div>
+
+                  {/* Fortschrittsbalken */}
+                  {fortschritt !== null && (
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between text-xs text-light-text-secondary dark:text-dark-text-secondary mb-1">
+                        <span>{erledigtCount}/{projektTodos.length} Aufgaben erledigt</span>
+                        <span>{fortschritt}%</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-light-border dark:bg-dark-border overflow-hidden">
+                        <div className="h-full rounded-full bg-purple-500 transition-all" style={{ width: `${fortschritt}%` }} />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Todo-Toggle */}
+                  <button
+                    onClick={() => setExpandedId(isExpanded ? null : p.id)}
+                    className="mt-3 flex items-center gap-1.5 text-xs text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main transition-colors"
+                  >
+                    {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+                    Aufgaben ({projektTodos.length})
+                  </button>
                 </div>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                  <button onClick={() => setModal(p)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500"><Edit2 size={12} /></button>
-                  <button onClick={() => loesche(p.id)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500"><Trash2 size={12} /></button>
-                </div>
+
+                {/* Aufgaben-Sektion (ausgeklappt) */}
+                {isExpanded && (
+                  <div className="border-t border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg p-3">
+                    <div className="space-y-1 mb-3">
+                      {projektTodos.length === 0 && (
+                        <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">Noch keine Aufgaben in diesem Projekt.</p>
+                      )}
+                      {projektTodos.map((t) => (
+                        <div key={t.id} className="flex items-center gap-2 group">
+                          <button onClick={() => toggleTodo(t.id, t.erledigt)} className="flex-shrink-0 text-light-text-secondary dark:text-dark-text-secondary hover:text-purple-500">
+                            {t.erledigt ? <CheckSquare size={14} className="text-green-500" /> : <Square size={14} />}
+                          </button>
+                          <span className={`text-xs flex-1 ${t.erledigt ? "line-through text-light-text-secondary dark:text-dark-text-secondary" : "text-light-text-main dark:text-dark-text-main"}`}>{t.beschreibung}</span>
+                          <button onClick={() => todoLoeschen(t.id)} className="opacity-0 group-hover:opacity-100 p-0.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500 transition-opacity"><Trash2 size={11} /></button>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Neue Aufgabe */}
+                    <div className="flex gap-2">
+                      <input
+                        value={neuerTodoText}
+                        onChange={(e) => setNeuerTodoText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && todoHinzufuegen(p.id)}
+                        placeholder="Neue Aufgabe..."
+                        className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-purple-500"
+                      />
+                      <button onClick={() => todoHinzufuegen(p.id)} className="px-3 py-1.5 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded-lg">
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-              {p.beschreibung && <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-3 line-clamp-2">{p.beschreibung}</p>}
-              <div className="flex items-center justify-between">
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_FARBEN[p.status]}`}>{STATUS_LABEL[p.status]}</span>
-                {p.budget && <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">Budget: {Number(p.budget).toFixed(0)} €</span>}
-              </div>
-              {p.zieldatum && <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary mt-2">Ziel: {p.zieldatum}</p>}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
