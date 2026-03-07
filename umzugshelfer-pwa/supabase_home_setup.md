@@ -372,7 +372,71 @@ alter table public.home_geraete
 
 ---
 
-## 5. Schema neu laden
+## 5. Phase 3 Erweiterungen
+
+```sql
+-- ============================================================
+-- Phase 3: Verlauf, Wissensdatenbank, Cross-Device Sync
+-- ============================================================
+
+-- 1. home_verlauf: Aktivitätsprotokoll für alle Home-Aktionen
+create table if not exists public.home_verlauf (
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid references auth.users(id) on delete cascade not null,
+  tabelle         text not null,           -- z.B. "home_objekte"
+  datensatz_name  text not null,           -- Anzeigename des betroffenen Datensatzes
+  aktion          text not null            -- "erstellt" | "geaendert" | "geloescht"
+    check (aktion in ('erstellt', 'geaendert', 'geloescht')),
+  created_at      timestamptz default now() not null
+);
+
+create index if not exists idx_home_verlauf_user_id on public.home_verlauf(user_id);
+create index if not exists idx_home_verlauf_created_at on public.home_verlauf(created_at desc);
+
+alter table public.home_verlauf enable row level security;
+
+drop policy if exists home_verlauf_crud_own on public.home_verlauf;
+create policy home_verlauf_crud_own
+  on public.home_verlauf for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- 2. home_wissen: Wissensdatenbank / Wiki-Einträge
+create table if not exists public.home_wissen (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid references auth.users(id) on delete cascade not null,
+  titel       text not null,
+  inhalt      text,
+  kategorie   text default 'Notizen',
+  tags        text[] default '{}',
+  created_at  timestamptz default now() not null,
+  updated_at  timestamptz default now() not null
+);
+
+create index if not exists idx_home_wissen_user_id on public.home_wissen(user_id);
+
+drop trigger if exists set_home_wissen_updated_at on public.home_wissen;
+create trigger set_home_wissen_updated_at
+  before update on public.home_wissen
+  for each row execute function public.set_updated_at();
+
+alter table public.home_wissen enable row level security;
+
+drop policy if exists home_wissen_crud_own on public.home_wissen;
+create policy home_wissen_crud_own
+  on public.home_wissen for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- 3. Cross-Device Sync: app_modus in user_profile speichern
+alter table public.user_profile
+  add column if not exists app_modus text default 'umzug'
+    check (app_modus in ('umzug', 'home'));
+```
+
+---
+
+## 6. Schema neu laden
 
 ```sql
 select pg_notify('pgrst', 'reload schema');

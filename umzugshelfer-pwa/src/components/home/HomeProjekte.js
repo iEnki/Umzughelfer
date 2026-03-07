@@ -1,8 +1,105 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { FolderOpen, Plus, Edit2, Trash2, X, Loader2, AlertCircle, ChevronDown, ChevronRight, CheckSquare, Square } from "lucide-react";
+import { FolderOpen, Plus, Edit2, Trash2, X, Loader2, AlertCircle, ChevronDown, ChevronRight, CheckSquare, Square, Leaf, Sun, Wind, Snowflake } from "lucide-react";
 import { supabase } from "../../supabaseClient";
+import { logVerlauf } from "../../utils/homeVerlauf";
 
 const TYPEN = ["Reorganisation", "Reparatur", "Saisonwechsel", "Renovierung", "Dekoration", "Anschaffung", "Sonstiges"];
+
+// ─── Jahreszeiten-Templates ───────────────────────────────────────────────────
+const SAISON_TEMPLATES = {
+  Frühling: {
+    icon: Leaf,
+    farbe: "text-green-500",
+    bg: "bg-green-500/10",
+    name: "Frühjahrsputz & Neustart",
+    beschreibung: "Frühjahrsputz, Garten vorbereiten und Winterkram einräumen.",
+    aufgaben: [
+      "Fenster putzen (innen + außen)",
+      "Winterkleidung waschen und einlagern",
+      "Sommerkleidung herausholen",
+      "Keller/Abstellraum aufräumen",
+      "Garten vorbereiten (Beete umgraben, Dünger)",
+      "Heizung abschalten und überprüfen lassen",
+      "Fahrräder herrichten",
+    ],
+  },
+  Sommer: {
+    icon: Sun,
+    farbe: "text-yellow-500",
+    bg: "bg-yellow-500/10",
+    name: "Sommer-Vorbereitung",
+    beschreibung: "Urlaub vorbereiten, Garten pflegen und Hitzeschutz einrichten.",
+    aufgaben: [
+      "Sonnenschutz (Rollos, Sonnenschirme) prüfen",
+      "Klimaanlage/Ventilatoren warten",
+      "Gartengeräte überprüfen",
+      "Grillequipment reinigen",
+      "Notfall-Wasservorrat prüfen",
+      "Fenster abdichten gegen Insekten",
+    ],
+  },
+  Herbst: {
+    icon: Wind,
+    farbe: "text-orange-500",
+    bg: "bg-orange-500/10",
+    name: "Herbst-Einräumen",
+    beschreibung: "Sommer beenden, auf Winter vorbereiten und Vorräte anlegen.",
+    aufgaben: [
+      "Sommerkleidung einräumen",
+      "Winterkleidung herausholen",
+      "Gartenmöbel einräumen / abdecken",
+      "Heizung in Betrieb nehmen und testen",
+      "Wintervorräte anlegen (Konserven, Trockenware)",
+      "Regenrinnen reinigen",
+      "Rauchmelder und CO-Melder testen",
+    ],
+  },
+  Winter: {
+    icon: Snowflake,
+    farbe: "text-blue-400",
+    bg: "bg-blue-400/10",
+    name: "Winter-Vorbereitung",
+    beschreibung: "Frostschutz, Notfall-Ausrüstung prüfen und gemütlich machen.",
+    aufgaben: [
+      "Winterreifen aufziehen",
+      "Frostschutzmittel prüfen (Auto, Wasserrohre)",
+      "Schneeschaufel und Streugut bereitstellen",
+      "Notfall-Vorräte prüfen (Kerzen, Taschenlampe, Batterien)",
+      "Heizöl / Pellets / Gas auffüllen",
+      "Weihnachtsdeko hervorholen und prüfen",
+    ],
+  },
+};
+
+const SaisonWahlModal = ({ onWaehle, onAbbrechen }) => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-sm w-full border border-light-border dark:border-dark-border">
+      <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
+        <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">Jahreszeiten-Template</h3>
+        <button onClick={onAbbrechen} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
+      </div>
+      <div className="p-4 grid grid-cols-2 gap-3">
+        {Object.entries(SAISON_TEMPLATES).map(([saison, meta]) => {
+          const Icon = meta.icon;
+          return (
+            <button
+              key={saison}
+              onClick={() => onWaehle(saison)}
+              className={`flex flex-col items-center gap-2 p-4 rounded-xl border border-light-border dark:border-dark-border hover:border-current transition-colors ${meta.bg}`}
+            >
+              <Icon size={28} className={meta.farbe} />
+              <span className={`text-sm font-medium ${meta.farbe}`}>{saison}</span>
+              <span className="text-[10px] text-light-text-secondary dark:text-dark-text-secondary text-center">{meta.aufgaben.length} Aufgaben</span>
+            </button>
+          );
+        })}
+      </div>
+      <div className="px-4 pb-4">
+        <button onClick={onAbbrechen} className="w-full px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Ohne Template fortfahren</button>
+      </div>
+    </div>
+  </div>
+);
 const STATUS_OPTIONEN = ["geplant", "in_bearbeitung", "pausiert", "abgeschlossen"];
 const STATUS_LABEL = { geplant: "Geplant", in_bearbeitung: "In Bearbeitung", pausiert: "Pausiert", abgeschlossen: "Abgeschlossen" };
 const STATUS_FARBEN = { geplant: "bg-gray-500/10 text-gray-500", in_bearbeitung: "bg-blue-500/10 text-blue-500", pausiert: "bg-amber-500/10 text-amber-500", abgeschlossen: "bg-green-500/10 text-green-500" };
@@ -74,6 +171,7 @@ const HomeProjekte = ({ session }) => {
   const [statusFilter, setStatusFilter] = useState("");
   const [expandedId, setExpandedId] = useState(null);
   const [neuerTodoText, setNeuerTodoText] = useState("");
+  const [saisonModal, setSaisonModal] = useState(false); // Saison-Template-Wahl
 
   const ladeDaten = useCallback(async () => {
     if (!userId) return;
@@ -99,16 +197,48 @@ const HomeProjekte = ({ session }) => {
     const payload = { ...daten, user_id: userId };
     if (modal?.id) {
       await supabase.from("home_projekte").update(daten).eq("id", modal.id);
+      await logVerlauf(supabase, userId, "home_projekte", daten.name, "geaendert");
     } else {
-      await supabase.from("home_projekte").insert(payload);
+      const { data: neu } = await supabase.from("home_projekte").insert(payload).select("id").single();
+      await logVerlauf(supabase, userId, "home_projekte", daten.name, "erstellt");
+      // Saison-Template-Aufgaben anlegen (aus modal-State, nicht aus ProjektForm-daten)
+      const saisonAufgaben = modal?._saisonAufgaben;
+      if (saisonAufgaben?.length && neu?.id) {
+        const todoPayload = saisonAufgaben.map((text) => ({
+          user_id: userId,
+          beschreibung: text,
+          home_projekt_id: neu.id,
+          app_modus: "home",
+          erledigt: false,
+        }));
+        await supabase.from("todo_aufgaben").insert(todoPayload);
+      }
     }
     setModal(null);
     ladeDaten();
   };
 
+  // Saison-Template auswählen → Formular mit Vorausfüllung öffnen
+  const waehleSaison = (saison) => {
+    const tmpl = SAISON_TEMPLATES[saison];
+    setSaisonModal(false);
+    setModal({
+      name: tmpl.name,
+      typ: "Saisonwechsel",
+      status: "geplant",
+      beschreibung: tmpl.beschreibung,
+      startdatum: "",
+      zieldatum: "",
+      budget: "",
+      _saisonAufgaben: tmpl.aufgaben,
+    });
+  };
+
   const loesche = async (id) => {
+    const p = projekte.find((x) => x.id === id);
     if (!window.confirm("Projekt löschen?")) return;
     await supabase.from("home_projekte").delete().eq("id", id);
+    if (p) await logVerlauf(supabase, userId, "home_projekte", p.name, "geloescht");
     ladeDaten();
   };
 
@@ -147,9 +277,14 @@ const HomeProjekte = ({ session }) => {
           <FolderOpen size={22} className="text-purple-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Projekte</h1>
         </div>
-        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
-          <Plus size={14} />Neues Projekt
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setSaisonModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium" title="Jahreszeiten-Template verwenden">
+            <Leaf size={14} />Saison
+          </button>
+          <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+            <Plus size={14} />Neues Projekt
+          </button>
+        </div>
       </div>
 
       {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
@@ -260,15 +395,29 @@ const HomeProjekte = ({ session }) => {
         </div>
       )}
 
+      {/* Saison-Template-Modal */}
+      {saisonModal && (
+        <SaisonWahlModal onWaehle={waehleSaison} onAbbrechen={() => setSaisonModal(false)} />
+      )}
+
       {modal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border sticky top-0 bg-light-card dark:bg-dark-card">
-              <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">{modal.id ? "Projekt bearbeiten" : "Neues Projekt"}</h3>
+              <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">
+                {modal.id ? "Projekt bearbeiten" : modal._saisonAufgaben ? `Saison-Projekt: ${modal.name}` : "Neues Projekt"}
+              </h3>
               <button onClick={() => setModal(null)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
             </div>
+            {modal._saisonAufgaben && (
+              <div className="px-4 pt-3 pb-0">
+                <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs text-orange-600 dark:text-orange-400">
+                  ✦ Template enthält {modal._saisonAufgaben.length} vorgefertigte Aufgaben, die beim Speichern angelegt werden.
+                </div>
+              </div>
+            )}
             <div className="p-4">
-              <ProjektForm initial={modal.id ? modal : null} onSpeichern={speichere} onAbbrechen={() => setModal(null)} />
+              <ProjektForm initial={modal} onSpeichern={speichere} onAbbrechen={() => setModal(null)} />
             </div>
           </div>
         </div>

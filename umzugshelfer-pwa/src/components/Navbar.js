@@ -135,6 +135,8 @@ const Navbar = ({ session, setSession }) => {
     { name: "Geräte", path: "/home/geraete" },
     { name: "Budget", path: "/home/budget" },
     { name: "Projekte", path: "/home/projekte" },
+    { name: "Wissen", path: "/home/wissen" },
+    { name: "Verlauf", path: "/home/verlauf" },
   ];
 
   const navItems = appMode === "home" ? homeNavItems : umzugNavItems;

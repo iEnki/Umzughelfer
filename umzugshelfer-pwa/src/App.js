@@ -20,6 +20,9 @@ import HomeGeraete from "./components/home/HomeGeraete";
 import HomeBudget from "./components/home/HomeBudget";
 import HomeProjekte from "./components/home/HomeProjekte";
 import HomeOnboarding from "./components/home/HomeOnboarding";
+// Phase 3
+import HomeVerlauf from "./components/home/HomeVerlauf";
+import HomeWissen from "./components/home/HomeWissen";
 
 import Navbar from "./components/Navbar";
 import Dashboard from "./components/Dashboard";
@@ -47,6 +50,30 @@ import RenovierungsplanerFeaturePage from "./components/featurepages/Renovierung
 import ZeitstrahlFeaturePage from "./components/featurepages/ZeitstrahlFeaturePage"; // NEU
 import KiAssistentenFeaturePage from "./components/featurepages/KiAssistentenFeaturePage"; // NEU
 import QrCodeFeaturePage from "./components/featurepages/QrCodeFeaturePage"; // NEU
+
+// Cross-Device Sync: liest app_modus aus user_profile und schreibt Änderungen zurück
+const HomeModusSyncer = ({ session }) => {
+  const { appMode, switchToHome, switchToUmzug } = useAppMode();
+  const userId = session?.user?.id;
+
+  // Einmalig beim Login: Modus aus Supabase laden
+  useEffect(() => {
+    if (!userId) return;
+    supabase.from("user_profile").select("app_modus").eq("id", userId).single()
+      .then(({ data }) => {
+        if (data?.app_modus === "home") switchToHome();
+        else if (data?.app_modus === "umzug") switchToUmzug();
+      });
+  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Bei Modus-Änderung in Supabase persistieren
+  useEffect(() => {
+    if (!userId) return;
+    supabase.from("user_profile").update({ app_modus: appMode }).eq("id", userId);
+  }, [appMode, userId]);
+
+  return null;
+};
 
 // Onboarding-Gate: zeigt Modusauswahl für neue Nutzer
 const OnboardingGate = ({ session, children }) => {
@@ -139,6 +166,7 @@ function App() {
       {" "}
       {/* AppModeProvider für Home Organizer Modus */}
       {/* <Router> wurde entfernt, da es wahrscheinlich in index.js ist */}
+      <HomeModusSyncer session={session} />
       <OnboardingGate session={session}>
       <div className="flex flex-col min-h-screen bg-light-bg dark:bg-dark-bg">
         {" "}
@@ -331,6 +359,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <HomeProjekte session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/verlauf"
+              element={
+                <ProtectedRoute>
+                  <HomeVerlauf session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/wissen"
+              element={
+                <ProtectedRoute>
+                  <HomeWissen session={session} />
                 </ProtectedRoute>
               }
             />
