@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "React Dev Server",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "cd umzugshelfer-pwa && npm start"],
+      "port": 3000
+    },
+    {
+      "name": "Docker Production",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "docker compose up"],
+      "port": 8080
+    }
+  ]
+}

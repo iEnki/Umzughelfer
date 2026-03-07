@@ -13,14 +13,36 @@ import {
   PieChart,
   Zap,
   TrendingUp as GesamtFortschrittIcon,
+  CheckCircle,
+  Home,
   // Sun, Moon und useTheme werden hier nicht mehr direkt benötigt
 } from "lucide-react";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import { formatGermanCurrency } from "../utils/formatUtils"; // Korrekter Import
 import { useTheme } from "../contexts/ThemeContext"; // Importieren für Diagrammfarben
+import { useAppMode } from "../contexts/AppModeContext"; // Home Organizer Modus
+import UmzugAbschlussModal from "./home/UmzugAbschlussModal"; // Migrations-Wizard
 
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+const PHASEN = [
+  {
+    name: "Vor dem Umzug",
+    kategorien: ["Verträge", "Organisation", "Finanzen", "Dokumente", "Ausmisten", "Wohnung"],
+    farbe: { bar: "bg-blue-500", text: "text-blue-600 dark:text-blue-400", badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  },
+  {
+    name: "Umzugstag",
+    kategorien: ["Umzugstag", "Transport"],
+    farbe: { bar: "bg-orange-500", text: "text-orange-600 dark:text-orange-400", badge: "bg-orange-500/10 text-orange-600 dark:text-orange-400" },
+  },
+  {
+    name: "Nach dem Umzug",
+    kategorien: ["Behörde", "Versorger", "Gesundheit", "Sonstiges", "Fahrzeuge", "Küche", "Bad", "Kinderzimmer"],
+    farbe: { bar: "bg-green-500", text: "text-green-600 dark:text-green-400", badge: "bg-green-500/10 text-green-600 dark:text-green-400" },
+  },
+];
 
 // Farbpaletten für Diagramme
 const kategorieFarbenLight = {
@@ -70,12 +92,17 @@ const Dashboard = ({ session }) => {
   const [packlisteItemsCount, setPacklisteItemsCount] = useState(0);
   const [kistenGesamtCount, setKistenGesamtCount] = useState(0);
   const [kistenGepacktCount, setKistenGepacktCount] = useState(0);
+  const [renovierungErledigt, setRenovierungErledigt] = useState(0);
+  const [renovierungGesamt, setRenovierungGesamt] = useState(0);
+  const [phasenTodos, setPhasenTodos] = useState([]);
   const [naechsteDeadlines, setNaechsteDeadlines] = useState([]);
   const [offeneTodosWichtig, setOffeneTodosWichtig] = useState([]);
   const [kostenNachKategorie, setKostenNachKategorie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [gesamtFortschrittProzent, setGesamtFortschrittProzent] = useState(0);
+  const [zeigeAbschlussModal, setZeigeAbschlussModal] = useState(false);
+  const { umzugAbgeschlossen, markUmzugAbgeschlossen, switchToHome } = useAppMode();
   // const { theme, toggleTheme } = useTheme(); // Logik wandert in Navbar
 
   const fetchData = useCallback(async () => {
@@ -113,12 +140,13 @@ const Dashboard = ({ session }) => {
       setGesamtbudget(currentGesamtbudget);
       const { data: todosDataRes } = await supabase
         .from("todo_aufgaben")
-        .select("erledigt, beschreibung, faelligkeitsdatum, prioritaet")
+        .select("erledigt, beschreibung, faelligkeitsdatum, prioritaet, kategorie")
         .eq("user_id", userId);
       setTodosGesamt(todosDataRes?.length || 0);
       setTodosErledigt(
         todosDataRes?.filter((todo) => todo.erledigt).length || 0
       );
+      setPhasenTodos(todosDataRes || []);
       const { data: kistenDataForPackliste, error: kistenError } =
         await supabase
           .from("pack_kisten")
@@ -142,6 +170,18 @@ const Dashboard = ({ session }) => {
       setKistenGesamtCount(gesamtKisten);
       setPacklisteItemsCount(totalItems);
       setKistenGepacktCount(gepackteKisten);
+
+      const { data: renovierungData } = await supabase
+        .from("renovierungs_posten")
+        .select("status")
+        .eq("user_id", userId);
+      const renovierungGesamt = (renovierungData || []).length;
+      const renovierungErledigt = (renovierungData || []).filter(
+        (r) => r.status === "Erledigt"
+      ).length;
+      setRenovierungGesamt(renovierungGesamt);
+      setRenovierungErledigt(renovierungErledigt);
+
       const heuteString = new Date().toISOString().split("T")[0];
       const { data: deadlineTodos } = await supabase
         .from("todo_aufgaben")
@@ -282,6 +322,9 @@ const Dashboard = ({ session }) => {
     todosGesamt > 0 ? (todosErledigt / todosGesamt) * 100 : 0;
   const kistenGepacktProzent =
     kistenGesamtCount > 0 ? (kistenGepacktCount / kistenGesamtCount) * 100 : 0;
+  const renovierungProzent =
+    renovierungGesamt > 0 ? (renovierungErledigt / renovierungGesamt) * 100 : 0;
+
   useEffect(() => {
     let progressSum = 0;
     let progressCount = 0;
@@ -293,10 +336,14 @@ const Dashboard = ({ session }) => {
       progressSum += kistenGepacktProzent;
       progressCount++;
     }
+    if (renovierungGesamt > 0) {
+      progressSum += renovierungProzent;
+      progressCount++;
+    }
     setGesamtFortschrittProzent(
       progressCount > 0 ? Math.round(progressSum / progressCount) : 0
     );
-  }, [todosProzent, kistenGepacktProzent, todosGesamt, kistenGesamtCount]);
+  }, [todosProzent, kistenGepacktProzent, todosGesamt, kistenGesamtCount, renovierungProzent, renovierungGesamt]);
   const heuteStringFürHinweise = new Date().toISOString().split("T")[0];
   const aufgabenHeuteFaellig = naechsteDeadlines.filter(
     (d) => d.typ === "To-Do" && d.datum === heuteStringFürHinweise
@@ -424,6 +471,51 @@ const Dashboard = ({ session }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Banner: Umzug abschließen → Home Organizer */}
+      {gesamtFortschrittProzent >= 100 && !umzugAbgeschlossen && (
+        <div className="p-3 rounded-lg shadow-md bg-green-500/10 border border-green-500/30">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center text-green-600 dark:text-green-400">
+              <CheckCircle size={20} className="mr-2 flex-shrink-0" />
+              <div>
+                <h3 className="font-semibold text-sm">Umzug abgeschlossen!</h3>
+                <p className="text-xs">Möchtest du in den Home Organizer wechseln und deine Daten übernehmen?</p>
+              </div>
+            </div>
+            <div className="flex gap-2 ml-3">
+              <button
+                onClick={() => { markUmzugAbgeschlossen(); }}
+                className="px-2 py-1 text-xs border border-green-500/30 rounded-lg text-green-600 dark:text-green-400 hover:bg-green-500/10"
+              >
+                Nicht jetzt
+              </button>
+              <button
+                onClick={() => setZeigeAbschlussModal(true)}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium"
+              >
+                <Home size={12} />
+                Wechseln
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {zeigeAbschlussModal && (
+        <UmzugAbschlussModal
+          session={session}
+          onAbschluss={() => {
+            markUmzugAbgeschlossen();
+            switchToHome();
+            setZeigeAbschlussModal(false);
+          }}
+          onSchliessen={() => {
+            markUmzugAbgeschlossen();
+            setZeigeAbschlussModal(false);
+          }}
+        />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -649,7 +741,7 @@ const Dashboard = ({ session }) => {
               </p>
             )}
           </div>
-          <Link to="/renovierung" className={linkStyle}>
+          <Link to="/materialplaner" className={linkStyle}>
             <div className={`${kachelBasisStyle}`}>
               <div className="flex items-center text-light-accent-green dark:text-dark-accent-green mb-1">
                 <Paintbrush size={16} className="mr-1.5" />
@@ -657,22 +749,70 @@ const Dashboard = ({ session }) => {
                   Renovierung
                 </h2>
               </div>
-              <p className="text-light-text-secondary dark:text-dark-text-secondary text-xs mt-1">
-                Status: Planung
+              <p className="text-lg font-bold text-light-text-main dark:text-dark-text-main">
+                {renovierungErledigt} / {renovierungGesamt}
               </p>
               <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-1.5 mt-1">
                 <div
                   className="bg-light-accent-green dark:bg-dark-accent-green h-1.5 rounded-full"
-                  style={{ width: "30%" }}
+                  style={{
+                    width: renovierungGesamt > 0
+                      ? `${Math.round((renovierungErledigt / renovierungGesamt) * 100)}%`
+                      : "0%",
+                  }}
                 ></div>
               </div>
               <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary mt-0.5">
-                30% erledigt
+                {renovierungGesamt > 0
+                  ? `${Math.round((renovierungErledigt / renovierungGesamt) * 100)}% erledigt`
+                  : "Keine Posten"}
               </p>
             </div>
           </Link>
         </div>
       </div>
+
+      {/* Phasen-Checkliste */}
+      {phasenTodos.length > 0 && (
+        <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-md border border-light-border dark:border-dark-border">
+          <h2 className="text-sm font-semibold text-light-text-main dark:text-dark-text-main mb-3">
+            Umzugsfortschritt nach Phase
+          </h2>
+          <div className="space-y-3">
+            {PHASEN.map((phase) => {
+              const phaseTodos = phasenTodos.filter((t) => phase.kategorien.includes(t.kategorie));
+              const gesamt = phaseTodos.length;
+              const erledigt = phaseTodos.filter((t) => t.erledigt).length;
+              const prozent = gesamt > 0 ? Math.round((erledigt / gesamt) * 100) : 0;
+              return (
+                <div key={phase.name}>
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-medium ${phase.farbe.text}`}>{phase.name}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${phase.farbe.badge}`}>
+                        {erledigt}/{gesamt}
+                      </span>
+                    </div>
+                    <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{prozent}%</span>
+                  </div>
+                  <div className="w-full bg-light-border dark:bg-dark-border rounded-full h-2">
+                    <div
+                      className={`${phase.farbe.bar} h-2 rounded-full transition-all`}
+                      style={{ width: `${prozent}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary mt-2">
+            Nur Aufgaben in kategorisierten To-Dos werden gezählt.{" "}
+            <Link to="/todos" className="underline hover:text-light-accent-green dark:hover:text-dark-accent-green">
+              Alle To-Dos anzeigen
+            </Link>
+          </p>
+        </div>
+      )}
     </div>
   );
 };

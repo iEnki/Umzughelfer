@@ -11,8 +11,12 @@ import {
   Users as FriendsIcon,
   HelpCircle as OtherIcon,
   Search,
-  MapPin, // Hinzugefügt für Adress-Icon
+  MapPin,
+  Download,
+  Upload,
+  Star,
 } from "lucide-react";
+import { useRef } from "react";
 import { useTheme } from "../contexts/ThemeContext"; // ThemeContext importieren
 
 const getInitials = (name) => {
@@ -92,7 +96,8 @@ const kontaktTypenFürFilter = ["Alle", ...Object.keys(kontaktTypMeta)];
 
 const KontaktManager = ({ session }) => {
   const userId = session?.user?.id;
-  const { theme } = useTheme(); // Theme aus Context holen
+  const { theme } = useTheme();
+  const vcardImportRef = useRef(null); // Theme aus Context holen
   const [kontakte, setKontakte] = useState([]);
   const [name, setName] = useState("");
   const [typ, setTyp] = useState("Möbelpacker");
@@ -103,6 +108,8 @@ const KontaktManager = ({ session }) => {
   const [error, setError] = useState(null);
   const [editingKontaktId, setEditingKontaktId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [bewertung, setBewertung] = useState(0);
+  const [bemerkungen, setBemerkungen] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterTyp, setFilterTyp] = useState("Alle");
   const [selectedMapService, setSelectedMapService] = useState(
@@ -178,8 +185,10 @@ const KontaktManager = ({ session }) => {
     setName("");
     setTyp("Möbelpacker");
     setTelefon("");
-    setAdresse(""); // Hinzugefügt
+    setAdresse("");
     setNotiz("");
+    setBewertung(0);
+    setBemerkungen("");
     setEditingKontaktId(null);
     setShowForm(false);
   };
@@ -188,8 +197,10 @@ const KontaktManager = ({ session }) => {
     setName(kontakt.name);
     setTyp(kontakt.typ);
     setTelefon(kontakt.telefon);
-    setAdresse(kontakt.adresse || ""); // Hinzugefügt
+    setAdresse(kontakt.adresse || "");
     setNotiz(kontakt.notiz || "");
+    setBewertung(kontakt.bewertung || 0);
+    setBemerkungen(kontakt.bemerkungen || "");
     setShowForm(true);
   };
   const handleAddNewClick = () => {
@@ -212,8 +223,10 @@ const KontaktManager = ({ session }) => {
       name,
       typ,
       telefon,
-      adresse: adresse || null, // Hinzugefügt
+      adresse: adresse || null,
       notiz: notiz || null,
+      bewertung: bewertung || null,
+      bemerkungen: bemerkungen || null,
       user_id: userId,
     };
     try {
@@ -230,6 +243,66 @@ const KontaktManager = ({ session }) => {
       alert(`Fehler: ${err.message}`);
     }
   };
+  const handleVcardExport = () => {
+    if (kontakte.length === 0) return;
+    const vcards = kontakte.map((k) => {
+      const lines = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:${k.name || ""}`,
+      ];
+      if (k.telefon) lines.push(`TEL;TYPE=CELL:${k.telefon}`);
+      if (k.adresse) lines.push(`ADR:;;${k.adresse.replace(/,/g, ";")};;;;`);
+      if (k.notiz) lines.push(`NOTE:${k.notiz.replace(/\n/g, "\\n")}`);
+      if (k.typ) lines.push(`TITLE:${k.typ}`);
+      lines.push("END:VCARD");
+      return lines.join("\r\n");
+    });
+    const content = vcards.join("\r\n\r\n");
+    const blob = new Blob([content], { type: "text/vcard;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `kontakte_${new Date().toISOString().slice(0, 10)}.vcf`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleVcardImport = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+    const text = await file.text();
+    const cards = text.split(/BEGIN:VCARD/i).filter((s) => s.trim());
+    const imported = [];
+    for (const card of cards) {
+      const getField = (key) => {
+        const match = card.match(new RegExp(`${key}[^:]*:(.+)`, "i"));
+        return match ? match[1].trim() : "";
+      };
+      const name = getField("FN");
+      const telefon = getField("TEL");
+      if (!name) continue;
+      const adrRaw = getField("ADR");
+      const adresse = adrRaw ? adrRaw.replace(/;+/g, ", ").replace(/^,\s*/, "").trim() : "";
+      const notiz = getField("NOTE").replace(/\\n/g, "\n");
+      imported.push({ user_id: userId, name, typ: "Sonstiges", telefon: telefon || "", adresse: adresse || null, notiz: notiz || null });
+    }
+    if (imported.length === 0) {
+      alert("Keine gültigen Kontakte in der Datei gefunden.");
+      e.target.value = "";
+      return;
+    }
+    try {
+      const { error: insertError } = await supabase.from("kontakte").insert(imported);
+      if (insertError) throw insertError;
+      alert(`${imported.length} Kontakt(e) importiert.`);
+      fetchKontakte();
+    } catch (err) {
+      alert(`Fehler beim Import: ${err.message}`);
+    }
+    e.target.value = "";
+  };
+
   const handleDeleteKontakt = async (id) => {
     if (!userId || !window.confirm("Kontakt löschen?")) return;
     try {
@@ -265,13 +338,38 @@ const KontaktManager = ({ session }) => {
         <h2 className="text-2xl font-bold text-light-text-main dark:text-dark-text-main">
           Kontakt-Manager
         </h2>
-        <button
-          onClick={handleAddNewClick}
-          disabled={!userId}
-          className="bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg px-3 py-1.5 rounded-md shadow hover:opacity-90 flex items-center space-x-1.5 text-sm disabled:opacity-50 self-start sm:self-center"
-        >
-          <UserPlus size={18} /> <span>Neuer Kontakt</span>
-        </button>
+        <div className="flex flex-wrap gap-2 self-start sm:self-center">
+          <button
+            onClick={handleAddNewClick}
+            disabled={!userId}
+            className="bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg px-3 py-1.5 rounded-md shadow hover:opacity-90 flex items-center space-x-1.5 text-sm disabled:opacity-50"
+          >
+            <UserPlus size={18} /> <span>Neuer Kontakt</span>
+          </button>
+          <button
+            onClick={handleVcardExport}
+            disabled={!userId || kontakte.length === 0}
+            className="bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-md shadow hover:opacity-80 flex items-center space-x-1.5 text-sm disabled:opacity-40"
+            title="Alle Kontakte als .vcf exportieren"
+          >
+            <Download size={18} /> <span>vCard Export</span>
+          </button>
+          <button
+            onClick={() => vcardImportRef.current?.click()}
+            disabled={!userId}
+            className="bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-md shadow hover:opacity-80 flex items-center space-x-1.5 text-sm disabled:opacity-40"
+            title=".vcf Datei importieren"
+          >
+            <Upload size={18} /> <span>vCard Import</span>
+          </button>
+          <input
+            ref={vcardImportRef}
+            type="file"
+            accept=".vcf,text/vcard"
+            onChange={handleVcardImport}
+            className="hidden"
+          />
+        </div>
       </div>
       <div className="mb-4 relative">
         <input
@@ -430,6 +528,47 @@ const KontaktManager = ({ session }) => {
                   className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
                 />
               </div>
+              <div>
+                <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-0.5">
+                  Bewertung (optional)
+                </label>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((stern) => (
+                    <button
+                      key={stern}
+                      type="button"
+                      onClick={() => setBewertung(bewertung === stern ? 0 : stern)}
+                      className="p-0.5 hover:scale-110 transition-transform"
+                    >
+                      <Star
+                        size={20}
+                        className={stern <= bewertung ? "text-amber-400 fill-amber-400" : "text-light-border dark:text-dark-border"}
+                      />
+                    </button>
+                  ))}
+                  {bewertung > 0 && (
+                    <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary self-center ml-1">
+                      {bewertung}/5
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label
+                  htmlFor="kontaktBemerkungen"
+                  className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-0.5"
+                >
+                  Bemerkungen (optional)
+                </label>
+                <textarea
+                  id="kontaktBemerkungen"
+                  value={bemerkungen}
+                  onChange={(e) => setBemerkungen(e.target.value)}
+                  rows="2"
+                  placeholder="z.B. Preis, Verfügbarkeit, Empfehlung..."
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                />
+              </div>
               <div className="flex justify-end space-x-2 pt-1">
                 <button
                   type="button"
@@ -534,10 +673,28 @@ const KontaktManager = ({ session }) => {
                                 <span>{kontakt.adresse}</span>
                               </a>
                             )}
+                            {kontakt.bewertung > 0 && (
+                              <div className="flex gap-0.5 mt-0.5">
+                                {[1, 2, 3, 4, 5].map((s) => (
+                                  <Star
+                                    key={s}
+                                    size={12}
+                                    className={s <= kontakt.bewertung ? "text-amber-400 fill-amber-400" : "text-light-border dark:text-dark-border"}
+                                  />
+                                ))}
+                              </div>
+                            )}
                             {kontakt.notiz && (
                               <div className="mt-1 pt-1 border-t border-light-border dark:border-dark-border/30">
                                 <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary whitespace-pre-wrap">
                                   {kontakt.notiz}
+                                </p>
+                              </div>
+                            )}
+                            {kontakt.bemerkungen && (
+                              <div className={`${!kontakt.notiz ? "mt-1 pt-1 border-t border-light-border dark:border-dark-border/30" : "mt-1"}`}>
+                                <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary whitespace-pre-wrap italic">
+                                  {kontakt.bemerkungen}
                                 </p>
                               </div>
                             )}

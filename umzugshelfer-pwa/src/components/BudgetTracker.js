@@ -11,7 +11,8 @@ import {
   DollarSign,
   ShoppingCart,
   Receipt,
-  CalendarPlus, // Hinzugefügt für iCal-Export
+  CalendarPlus,
+  Download,
 } from "lucide-react";
 import { formatGermanCurrency } from "../utils/formatUtils";
 import { generateIcsData, downloadIcsFile } from "../utils/calendarUtils"; // Hinzugefügt
@@ -357,6 +358,26 @@ const BudgetTracker = ({ session }) => {
         return;
       }
     }
+    // Smarte Budget-Warnung: prüfe ob neuer Posten Budget überschreiten würde
+    if (!editingPostenId && gesamtbudget > 0) {
+      const aktuelleGesamtplanung = posten.reduce(
+        (sum, p) => sum + parseFloat(p.betrag || 0),
+        0
+      );
+      const neueGesamtplanung = aktuelleGesamtplanung + geplanterBetragWert;
+      if (neueGesamtplanung > gesamtbudget) {
+        const ueberschreitung = neueGesamtplanung - gesamtbudget;
+        const bestaetigt = window.confirm(
+          `Warnung: Mit diesem Posten (${formatGermanCurrency(geplanterBetragWert)} €) werden die geplanten Gesamtkosten (${formatGermanCurrency(neueGesamtplanung)} €) dein Budget von ${formatGermanCurrency(gesamtbudget)} € um ${formatGermanCurrency(ueberschreitung)} € überschreiten.\n\nTrotzdem hinzufügen?`
+        );
+        if (!bestaetigt) return;
+      } else if (neueGesamtplanung > gesamtbudget * 0.9) {
+        window.alert(
+          `Hinweis: Nach diesem Posten sind ${Math.round((neueGesamtplanung / gesamtbudget) * 100)}% deines Budgets verplant (${formatGermanCurrency(neueGesamtplanung)} € von ${formatGermanCurrency(gesamtbudget)} €).`
+        );
+      }
+    }
+
     const postenDaten = {
       beschreibung,
       kategorie,
@@ -364,7 +385,6 @@ const BudgetTracker = ({ session }) => {
       datum: normalizedDatum,
       lieferdatum: normalizeDateInputValue(lieferdatum) || null,
       user_id: userId,
-      // typ: typ || "Ausgabe", // Entfernt, da nicht in DB und nicht benötigt
     };
     try {
       if (editingPostenId) {
@@ -498,6 +518,32 @@ const BudgetTracker = ({ session }) => {
   // Ansicht-Modus: "karten" (Standard) oder "liste"
   const [ansichtModus, setAnsichtModus] = useState("karten");
 
+  const handleCsvExport = () => {
+    const bom = "\uFEFF";
+    const header = ["Beschreibung", "Kategorie", "Geplanter Betrag (€)", "Fälligkeitsdatum", "Lieferdatum", "Teilzahlungen Summe (€)", "Offen (€)"];
+    const rows = posten.map((p) => {
+      const teilsumme = berechneSummeTeilzahlungen(p.teilzahlungen);
+      const offen = parseFloat(p.betrag || 0) - teilsumme;
+      return [
+        `"${(p.beschreibung || "").replace(/"/g, '""')}"`,
+        `"${p.kategorie || ""}"`,
+        String(parseFloat(p.betrag || 0).toFixed(2)).replace(".", ","),
+        p.datum || "",
+        p.lieferdatum || "",
+        String(teilsumme.toFixed(2)).replace(".", ","),
+        String(offen.toFixed(2)).replace(".", ","),
+      ].join(";");
+    });
+    const csvContent = bom + [header.join(";"), ...rows].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `budget_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleExportLieferterminToIcs = async (item) => {
     if (!item.lieferdatum) {
       alert(
@@ -567,6 +613,34 @@ const BudgetTracker = ({ session }) => {
     0
   );
   const gesamtOffen = geplanteGesamtkosten - gesamtTeilzahlungen;
+
+  // Ausgaben-Prognose: durchschnittliche tägliche Ausgaben berechnen
+  const berechnePrognose = () => {
+    const alleTeilzahlungen = posten.flatMap((p) => p.teilzahlungen || []);
+    if (alleTeilzahlungen.length < 2 || gesamtbudget <= 0) return null;
+    const datierte = alleTeilzahlungen
+      .filter((tz) => tz.datum_teilzahlung)
+      .map((tz) => ({ datum: new Date(tz.datum_teilzahlung), betrag: parseFloat(tz.betrag_teilzahlung || 0) }))
+      .sort((a, b) => a.datum - b.datum);
+    if (datierte.length < 2) return null;
+    const ersteDatum = datierte[0].datum;
+    const heute = new Date();
+    const tage = Math.max(1, Math.ceil((heute - ersteDatum) / (1000 * 60 * 60 * 24)));
+    const durchschnittProTag = gesamtTeilzahlungen / tage;
+    if (durchschnittProTag <= 0) return null;
+    const restBudget = gesamtbudget - gesamtTeilzahlungen;
+    if (restBudget <= 0) return { ueberschritten: true };
+    const tageVerbleibend = Math.ceil(restBudget / durchschnittProTag);
+    const prognoseDatum = new Date(heute);
+    prognoseDatum.setDate(prognoseDatum.getDate() + tageVerbleibend);
+    return {
+      ueberschritten: false,
+      durchschnittProTag,
+      tageVerbleibend,
+      prognoseDatum,
+    };
+  };
+  const prognose = berechnePrognose();
 
   return (
     <div className="p-3 md:p-4 lg:p-5">
@@ -646,6 +720,14 @@ const BudgetTracker = ({ session }) => {
             className="w-full bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg px-3 py-2 rounded-md shadow hover:opacity-90 flex items-center justify-center space-x-1.5 disabled:opacity-50 text-sm"
           >
             <PlusCircle size={18} /> <span>Neuer Kostenposten</span>
+          </button>
+          <button
+            onClick={handleCsvExport}
+            disabled={!userId || posten.length === 0}
+            className="w-full bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-2 rounded-md shadow hover:opacity-80 flex items-center justify-center space-x-1.5 disabled:opacity-40 text-sm"
+            title="Alle Kostenposten als CSV herunterladen"
+          >
+            <Download size={18} /> <span>CSV exportieren</span>
           </button>
         </div>
 
@@ -730,6 +812,25 @@ const BudgetTracker = ({ session }) => {
                     {formatGermanCurrency(gesamtbudget)} €
                   </span>
                 </div>
+              </div>
+            )}
+            {/* Prognose-Abschnitt */}
+            {prognose && (
+              <div className={`mt-3 p-2.5 rounded-md text-xs ${
+                prognose.ueberschritten
+                  ? "bg-red-500/10 border border-red-500/30 text-red-400"
+                  : prognose.tageVerbleibend < 14
+                  ? "bg-orange-500/10 border border-orange-500/30 text-orange-400"
+                  : "bg-light-border dark:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary"
+              }`}>
+                {prognose.ueberschritten ? (
+                  <span>Budget bereits überschritten.</span>
+                ) : (
+                  <span>
+                    Ø {formatGermanCurrency(prognose.durchschnittProTag)} €/Tag ausgegeben.
+                    {" "}Bei aktuellem Tempo läuft das Budget in ca. <strong>{prognose.tageVerbleibend} Tagen</strong> ({prognose.prognoseDatum.toLocaleDateString("de-DE")}) aus.
+                  </span>
+                )}
               </div>
             )}
           </div>

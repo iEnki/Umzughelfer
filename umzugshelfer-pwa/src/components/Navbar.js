@@ -1,16 +1,84 @@
-import React, { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { NavLink, useNavigate, Link } from "react-router-dom";
 import { supabase } from "../supabaseClient";
-import { Menu, X, LogOut, Sun, Moon } from "lucide-react"; // Sun und Moon importieren
+import { Menu, X, LogOut, Sun, Moon, Search, Truck, Home } from "lucide-react";
 import styles from "./Navbar.module.css";
-import { useTheme } from "../contexts/ThemeContext"; // useTheme importieren
+import { useTheme } from "../contexts/ThemeContext";
+import { useAppMode } from "../contexts/AppModeContext";
 
 const Navbar = ({ session, setSession }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [suchbegriff, setSuchbegriff] = useState("");
+  const [suchergebnisse, setSuchergebnisse] = useState([]);
+  const [suchOffen, setSuchOffen] = useState(false);
+  const [suchLaed, setSuchLaed] = useState(false);
+  const suchTimerRef = useRef(null);
+  const suchContainerRef = useRef(null);
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme(); // Theme-Zustand und Umschaltfunktion
+  const { theme, toggleTheme } = useTheme();
+  const { appMode, toggleMode } = useAppMode();
 
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const userId = session?.user?.id;
+
+  const handleSuche = useCallback(async (begriff) => {
+    if (!userId || !begriff || begriff.trim().length < 2) {
+      setSuchergebnisse([]);
+      setSuchOffen(false);
+      return;
+    }
+    setSuchLaed(true);
+    const q = begriff.trim().toLowerCase();
+    try {
+      const [kontakteRes, todosRes, kistenRes, dokRes] = await Promise.all([
+        supabase.from("kontakte").select("id, name, typ").eq("user_id", userId).ilike("name", `%${q}%`).limit(4),
+        supabase.from("todo_aufgaben").select("id, beschreibung, kategorie").eq("user_id", userId).ilike("beschreibung", `%${q}%`).limit(4),
+        supabase.from("pack_kisten").select("id, name, raum_neu").eq("user_id", userId).ilike("name", `%${q}%`).limit(4),
+        supabase.from("dokumente").select("id, dateiname").eq("user_id", userId).ilike("dateiname", `%${q}%`).limit(4),
+      ]);
+      const ergebnisse = [];
+      (kontakteRes.data || []).forEach((k) => ergebnisse.push({ modul: "Kontakt", text: k.name, sub: k.typ, link: "/kontakte" }));
+      (todosRes.data || []).forEach((t) => ergebnisse.push({ modul: "To-Do", text: t.beschreibung, sub: t.kategorie, link: "/todos" }));
+      (kistenRes.data || []).forEach((k) => ergebnisse.push({ modul: "Kiste", text: k.name, sub: k.raum_neu, link: "/packliste" }));
+      (dokRes.data || []).forEach((d) => ergebnisse.push({ modul: "Dokument", text: d.dateiname, sub: null, link: "/dokumente" }));
+      setSuchergebnisse(ergebnisse);
+      setSuchOffen(ergebnisse.length > 0);
+    } catch (err) {
+      // silent fail
+    } finally {
+      setSuchLaed(false);
+    }
+  }, [userId]);
+
+  const handleSuchInput = (e) => {
+    const val = e.target.value;
+    setSuchbegriff(val);
+    if (suchTimerRef.current) clearTimeout(suchTimerRef.current);
+    if (val.trim().length < 2) {
+      setSuchergebnisse([]);
+      setSuchOffen(false);
+      return;
+    }
+    suchTimerRef.current = setTimeout(() => handleSuche(val), 350);
+  };
+
+  const handleSuchErgebnisClick = (link) => {
+    setSuchbegriff("");
+    setSuchergebnisse([]);
+    setSuchOffen(false);
+    navigate(link);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (suchContainerRef.current && !suchContainerRef.current.contains(e.target)) {
+        setSuchOffen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleLogout = async () => {
     setIsOpen(false);
@@ -30,18 +98,33 @@ const Navbar = ({ session, setSession }) => {
     navigate("/");
   };
 
-  const navItems = [
+  const umzugNavItems = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Kontakte", path: "/kontakte" },
     { name: "Budget", path: "/budget" },
     { name: "To-Dos", path: "/todos" },
     { name: "Packliste", path: "/packliste" },
     { name: "Materialplaner", path: "/materialplaner" },
-    { name: "Bedarfsrechner", path: "/bedarfsrechner" }, // Behält Materialrechner
-    { name: "Umzugsplaner", path: "/umzugsplaner" }, // NEUER LINK für Volumen, Transport etc.
+    { name: "Bedarfsrechner", path: "/bedarfsrechner" },
+    { name: "Umzugsplaner", path: "/umzugsplaner" },
     { name: "Zeitstrahl", path: "/zeitstrahl" },
-    { name: "Dokumente", path: "/dokumente" }, // NEUER LINK für Dokumentenablage
+    { name: "Dokumente", path: "/dokumente" },
+    { name: "Kostenvergleich", path: "/kostenvergleich" },
   ];
+
+  const homeNavItems = [
+    { name: "Home", path: "/home" },
+    { name: "Inventar", path: "/home/inventar" },
+    { name: "Suche", path: "/home/suche" },
+    { name: "Vorräte", path: "/home/vorraete" },
+    { name: "Einkauf", path: "/home/einkaufliste" },
+    { name: "Aufgaben", path: "/home/aufgaben" },
+    { name: "Geräte", path: "/home/geraete" },
+    { name: "Budget", path: "/home/budget" },
+    { name: "Projekte", path: "/home/projekte" },
+  ];
+
+  const navItems = appMode === "home" ? homeNavItems : umzugNavItems;
 
   // Hilfsfunktion für Desktop NavLink Klassen
   const getDesktopNavLinkClasses = ({ isActive }) => {
@@ -130,6 +213,45 @@ const Navbar = ({ session, setSession }) => {
           </NavLink>
         </div>
 
+        {/* Globale Suche */}
+        {session && (
+          <div className="flex-1 max-w-sm mx-4 relative hidden md:block" ref={suchContainerRef}>
+            <div className="relative">
+              <Search size={15} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-light-text-secondary dark:text-dark-text-secondary pointer-events-none" />
+              <input
+                type="text"
+                value={suchbegriff}
+                onChange={handleSuchInput}
+                onFocus={() => suchergebnisse.length > 0 && setSuchOffen(true)}
+                placeholder="Suchen..."
+                className="w-full pl-8 pr-3 py-1.5 text-sm rounded-md border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:outline-none focus:ring-1 focus:ring-light-accent-green dark:focus:ring-dark-accent-green"
+              />
+            </div>
+            {suchOffen && (
+              <div className="absolute top-full mt-1 left-0 bg-light-card-bg dark:bg-dark-card-bg border border-light-border dark:border-dark-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto w-max min-w-full max-w-sm">
+                {suchergebnisse.length === 0 && !suchLaed && (
+                  <p className="px-3 py-2 text-xs text-light-text-secondary dark:text-dark-text-secondary whitespace-nowrap">Keine Ergebnisse</p>
+                )}
+                {suchergebnisse.map((r, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSuchErgebnisClick(r.link)}
+                    className="w-full text-left px-3 py-2.5 hover:bg-light-border dark:hover:bg-dark-border flex items-start gap-2.5 border-b border-light-border/50 dark:border-dark-border/50 last:border-0"
+                  >
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-light-accent-green/10 dark:bg-dark-accent-green/20 text-light-accent-green dark:text-dark-accent-green font-medium flex-shrink-0 mt-0.5 whitespace-nowrap">
+                      {r.modul}
+                    </span>
+                    <div>
+                      <p className="text-sm text-light-text-main dark:text-dark-text-main whitespace-nowrap">{r.text}</p>
+                      {r.sub && <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary whitespace-nowrap">{r.sub}</p>}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Rechter Bereich: Desktop-Navigation oder Mobile Burger-Menü */}
         <div>
           {/* Desktop Navigation */}
@@ -151,6 +273,14 @@ const Navbar = ({ session, setSession }) => {
               title={theme === "dark" ? "Heller Modus" : "Dunkler Modus"}
             >
               {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+            {/* Modus-Umschalter: Umzug ↔ Home Organizer */}
+            <button
+              onClick={toggleMode}
+              className="p-2 rounded-full hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary transition-colors ml-1"
+              title={appMode === "home" ? "Zum Umzugsplaner wechseln" : "Zum Home Organizer wechseln"}
+            >
+              {appMode === "home" ? <Truck size={20} /> : <Home size={20} />}
             </button>
             {/* Logout-Button für Desktop ist jetzt links, hier nicht mehr nötig */}
           </div>
@@ -201,6 +331,21 @@ const Navbar = ({ session, setSession }) => {
                 <Moon size={20} className="mr-2" />
               )}
               <span>{theme === "dark" ? "Hell" : "Dunkel"}</span>
+            </button>
+            {/* Modus-Umschalter für Mobile */}
+            <button
+              onClick={() => {
+                toggleMode();
+                toggleMenu();
+              }}
+              className="w-full flex items-center justify-center px-3 py-2 rounded-md text-base font-medium text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main hover:bg-light-border dark:hover:bg-dark-border transition-colors"
+            >
+              {appMode === "home" ? (
+                <Truck size={20} className="mr-2" />
+              ) : (
+                <Home size={20} className="mr-2" />
+              )}
+              <span>{appMode === "home" ? "Umzugsplaner" : "Home Organizer"}</span>
             </button>
           </div>
         </div>

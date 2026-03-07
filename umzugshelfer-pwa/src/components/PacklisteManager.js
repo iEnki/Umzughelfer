@@ -20,13 +20,17 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
-  BrainCircuit, // Icon für KI-Assistent
-  LayoutGrid, // Für Kachelansicht-Button
-  List, // Für Listenansicht-Button
+  BrainCircuit,
+  LayoutGrid,
+  List,
+  PackageCheck,
+  MapPin,
 } from "lucide-react";
 import { QRCodeCanvas } from "qrcode.react";
 import { Html5QrcodeScanner } from "html5-qrcode";
 import KiPacklisteAssistent from "./KiPacklisteAssistent";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import PacklistePDF from "./PacklistePDF";
 
 const gegenstandIconsDark = {
   buch: <Book size={14} className="mr-1.5 text-gray-400" />,
@@ -2196,6 +2200,71 @@ const getKategorieBadgeClass = (kategorie) => {
   return kategorieBadgeColors["Sonstiges"];
 };
 
+const RaumInventar = ({ kisten }) => {
+  const [open, setOpen] = useState(false);
+  const inventarNachRaum = {};
+  kisten.forEach((kiste) => {
+    const raum = kiste.raum_neu || "Ohne Raum";
+    (kiste.inhalt || []).forEach((item) => {
+      if (item.ausgepakt_am) {
+        if (!inventarNachRaum[raum]) inventarNachRaum[raum] = [];
+        inventarNachRaum[raum].push({ ...item, kisteName: kiste.name });
+      }
+    });
+  });
+
+  const raeume = Object.keys(inventarNachRaum).sort();
+  const gesamtAusgepackt = raeume.reduce((s, r) => s + inventarNachRaum[r].length, 0);
+
+  return (
+    <div className="bg-light-card-bg dark:bg-dark-card-bg rounded-lg border border-light-border dark:border-dark-border shadow-sm">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-left"
+      >
+        <div className="flex items-center gap-2">
+          <MapPin size={16} className="text-green-500" />
+          <span className="font-semibold text-sm text-light-text-main dark:text-dark-text-main">
+            Raum-Inventar (ausgepackt)
+          </span>
+          <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+            {gesamtAusgepackt} Gegenstände in {raeume.length} Räumen
+          </span>
+        </div>
+        {open ? <ChevronUp size={16} className="text-light-text-secondary dark:text-dark-text-secondary" /> : <ChevronDown size={16} className="text-light-text-secondary dark:text-dark-text-secondary" />}
+      </button>
+      {open && (
+        <div className="px-4 pb-4 space-y-3">
+          {raeume.map((raum) => (
+            <div key={raum}>
+              <h4 className="text-xs font-semibold text-light-text-main dark:text-dark-text-main mb-1 flex items-center gap-1">
+                <MapPin size={12} className="text-green-500" /> {raum}
+                <span className="text-light-text-secondary dark:text-dark-text-secondary font-normal">
+                  ({inventarNachRaum[raum].length} Gegenstände)
+                </span>
+              </h4>
+              <ul className="space-y-0.5">
+                {inventarNachRaum[raum].map((item) => (
+                  <li key={item.id} className="text-xs text-light-text-secondary dark:text-dark-text-secondary flex items-center gap-1.5">
+                    <PackageCheck size={11} className="text-green-500 flex-shrink-0" />
+                    <span>{item.menge}x {item.beschreibung}</span>
+                    {item.kategorie && (
+                      <span className={`px-1 py-0.5 rounded-full text-xs ${getKategorieBadgeClass(item.kategorie)}`}>
+                        {item.kategorie}
+                      </span>
+                    )}
+                    <span className="opacity-50">({item.kisteName})</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const PacklisteManager = ({ session }) => {
   const [userId, setUserId] = useState(null);
   const [kisten, setKisten] = useState([]);
@@ -2498,7 +2567,7 @@ const PacklisteManager = ({ session }) => {
       const { data, error: dbError } = await supabase
         .from("pack_kisten")
         .select(
-          "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie)"
+          "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie, ausgepakt_am)"
         )
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
@@ -2591,7 +2660,7 @@ const PacklisteManager = ({ session }) => {
         const { data: updatedKiste, error: fetchError } = await supabase
           .from("pack_kisten")
           .select(
-            "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie)"
+            "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie, ausgepakt_am)"
           )
           .eq("id", aktuelleKiste.id)
           .single();
@@ -2662,7 +2731,7 @@ const PacklisteManager = ({ session }) => {
         await supabase
           .from("pack_kisten")
           .select(
-            "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie)"
+            "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie, ausgepakt_am)"
           )
           .eq("id", aktuelleKiste.id)
           .single();
@@ -2674,6 +2743,40 @@ const PacklisteManager = ({ session }) => {
       alert(`Fehler beim Speichern des Gegenstands: ${err.message}`);
     }
   };
+  const handleToggleAusgepakt = async (gegenstandId, aktuellerWert) => {
+    const neuerWert = aktuellerWert ? null : new Date().toISOString();
+    try {
+      await supabase
+        .from("pack_gegenstaende")
+        .update({ ausgepakt_am: neuerWert })
+        .eq("id", gegenstandId)
+        .eq("user_id", userId);
+      // Lokal updaten ohne Reload
+      setAktuelleKiste((prev) => ({
+        ...prev,
+        inhalt: prev.inhalt.map((item) =>
+          item.id === gegenstandId ? { ...item, ausgepakt_am: neuerWert } : item
+        ),
+      }));
+      setKisten((prevKisten) =>
+        prevKisten.map((k) =>
+          k.id === aktuelleKiste?.id
+            ? {
+                ...k,
+                inhalt: k.inhalt.map((item) =>
+                  item.id === gegenstandId
+                    ? { ...item, ausgepakt_am: neuerWert }
+                    : item
+                ),
+              }
+            : k
+        )
+      );
+    } catch (err) {
+      alert(`Fehler: ${err.message}`);
+    }
+  };
+
   const handleDeleteGegenstand = async (gegenstandId) => {
     if (!window.confirm("Gegenstand löschen?")) return;
     if (!userId) return;
@@ -2687,7 +2790,7 @@ const PacklisteManager = ({ session }) => {
         await supabase
           .from("pack_kisten")
           .select(
-            "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie)"
+            "*, foto_pfad, qr_code_wert, inhalt:pack_gegenstaende(*, id, beschreibung, menge, kategorie, ausgepakt_am)"
           )
           .eq("id", aktuelleKiste.id)
           .single();
@@ -2976,6 +3079,19 @@ const PacklisteManager = ({ session }) => {
                 <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
                   {kiste.inhalt?.length || 0} Gegenstände
                 </p>
+                {kiste.inhalt && kiste.inhalt.length > 0 && kiste.inhalt.some((i) => i.ausgepakt_am) && (
+                  <div className="mt-1.5">
+                    <div className="w-full h-1.5 rounded-full bg-light-border dark:bg-dark-border overflow-hidden">
+                      <div
+                        className="h-1.5 rounded-full bg-green-500 transition-all"
+                        style={{ width: `${Math.round((kiste.inhalt.filter((i) => i.ausgepakt_am).length / kiste.inhalt.length) * 100)}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">
+                      {kiste.inhalt.filter((i) => i.ausgepakt_am).length}/{kiste.inhalt.length} ausgepackt
+                    </p>
+                  </div>
+                )}
               </div>
               <div className="mt-2 flex justify-end items-center">
                 <div className="flex space-x-1">
@@ -3226,6 +3342,22 @@ const PacklisteManager = ({ session }) => {
           >
             <BrainCircuit size={18} className="mr-1.5" /> KI Assistent
           </button>
+          {kisten.length > 0 && (
+            <PDFDownloadLink
+              document={<PacklistePDF kisten={kisten} />}
+              fileName={`packliste_${new Date().toISOString().slice(0, 10)}.pdf`}
+              className="flex items-center bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-md hover:opacity-80 transition-colors shadow-sm text-sm"
+              title="Packliste als PDF herunterladen"
+            >
+              {({ loading: pdfLoading }) =>
+                pdfLoading ? (
+                  <span className="flex items-center"><Download size={18} className="mr-1.5" /> PDF wird erstellt...</span>
+                ) : (
+                  <span className="flex items-center"><Download size={18} className="mr-1.5" /> PDF Export</span>
+                )
+              }
+            </PDFDownloadLink>
+          )}
         </div>
       </div>
       {showKiAssistent && userId && (
@@ -3617,17 +3749,33 @@ const PacklisteManager = ({ session }) => {
                     Keine Gegenstände in diesem Packstück.
                   </p>
                 )}{" "}
+                {aktuelleKiste.inhalt && aktuelleKiste.inhalt.length > 0 && (
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                      {aktuelleKiste.inhalt.filter((i) => i.ausgepakt_am).length} / {aktuelleKiste.inhalt.length} ausgepackt
+                    </span>
+                  </div>
+                )}
                 <ul className="space-y-1 max-h-48 overflow-y-auto">
-                  {" "}
                   {aktuelleKiste.inhalt?.map((item) => (
                     <li
                       key={item.id}
-                      className="text-xs text-light-text-secondary dark:text-dark-text-secondary p-1.5 bg-gray-50 dark:bg-dark-bg/50 rounded-md flex justify-between items-center group hover:bg-gray-100 dark:hover:bg-dark-border/50"
+                      className={`text-xs p-1.5 rounded-md flex justify-between items-center group hover:bg-gray-100 dark:hover:bg-dark-border/50 ${
+                        item.ausgepakt_am
+                          ? "bg-green-50 dark:bg-green-900/20 text-light-text-secondary dark:text-dark-text-secondary"
+                          : "bg-gray-50 dark:bg-dark-bg/50 text-light-text-secondary dark:text-dark-text-secondary"
+                      }`}
                     >
-                      {" "}
-                      <div className="flex items-center">
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <button
+                          onClick={() => handleToggleAusgepakt(item.id, item.ausgepakt_am)}
+                          className={`flex-shrink-0 ${item.ausgepakt_am ? "text-green-500" : "text-light-text-secondary dark:text-dark-text-secondary hover:text-green-500"}`}
+                          title={item.ausgepakt_am ? "Als verpackt markieren" : "Als ausgepackt markieren"}
+                        >
+                          <PackageCheck size={14} />
+                        </button>
                         {getGegenstandIcon(item.beschreibung)}
-                        <span>
+                        <span className={item.ausgepakt_am ? "line-through opacity-60" : ""}>
                           {item.menge}x {item.beschreibung}{" "}
                           {item.kategorie && (
                             <span
@@ -3639,8 +3787,8 @@ const PacklisteManager = ({ session }) => {
                             </span>
                           )}
                         </span>
-                      </div>{" "}
-                      <div className="opacity-0 group-hover:opacity-100">
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 flex-shrink-0">
                         <button
                           onClick={() => handleDeleteGegenstand(item.id)}
                           className="p-0.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-danger-color"
@@ -3648,10 +3796,10 @@ const PacklisteManager = ({ session }) => {
                         >
                           <Trash2 size={14} />
                         </button>
-                      </div>{" "}
+                      </div>
                     </li>
-                  ))}{" "}
-                </ul>{" "}
+                  ))}
+                </ul>
               </div>
             )}
             <div className="flex justify-between items-center pt-4 mt-3 border-t border-light-border dark:border-dark-border/50">
@@ -3683,6 +3831,11 @@ const PacklisteManager = ({ session }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Raum-Inventar: Ausgepackte Gegenstände nach Raum */}
+      {kisten.some((k) => k.inhalt?.some((i) => i.ausgepakt_am)) && (
+        <RaumInventar kisten={kisten} />
       )}
 
       {/* Foto Lightbox Modal */}

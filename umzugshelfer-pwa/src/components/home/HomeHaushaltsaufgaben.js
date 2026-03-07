@@ -1,0 +1,240 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { CheckSquare, Plus, Trash2, X, Check, Loader2, RefreshCw, AlertCircle } from "lucide-react";
+import { supabase } from "../../supabaseClient";
+
+const KATEGORIEN = ["Reinigung", "Pflege", "Garten", "Einkauf", "Reparatur", "Wartung", "Organisation", "Sonstiges"];
+const PRIORITAETEN = ["Hoch", "Mittel", "Niedrig"];
+const WIEDERHOLUNG = ["Keine", "Täglich", "Wöchentlich", "Monatlich", "Jährlich"];
+
+const AufgabeForm = ({ initial, onSpeichern, onAbbrechen }) => {
+  const [form, setForm] = useState({
+    beschreibung: initial?.beschreibung || "",
+    kategorie: initial?.kategorie || "Reinigung",
+    prioritaet: initial?.prioritaet || "Mittel",
+    faelligkeitsdatum: initial?.faelligkeitsdatum ? initial.faelligkeitsdatum.split("T")[0] : "",
+    wiederholung_typ: initial?.wiederholung_typ || "Keine",
+    app_modus: "home",
+  });
+
+  return (
+    <div className="space-y-3">
+      <div>
+        <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Aufgabe*</label>
+        <input
+          value={form.beschreibung}
+          onChange={(e) => setForm((p) => ({ ...p, beschreibung: e.target.value }))}
+          placeholder="z.B. Kühlschrank reinigen"
+          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Kategorie</label>
+          <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+            {KATEGORIEN.map((k) => <option key={k}>{k}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Priorität</label>
+          <select value={form.prioritaet} onChange={(e) => setForm((p) => ({ ...p, prioritaet: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+            {PRIORITAETEN.map((p) => <option key={p}>{p}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Fällig am</label>
+          <input type="date" value={form.faelligkeitsdatum} onChange={(e) => setForm((p) => ({ ...p, faelligkeitsdatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Wiederholung</label>
+          <select value={form.wiederholung_typ} onChange={(e) => setForm((p) => ({ ...p, wiederholung_typ: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+            {WIEDERHOLUNG.map((w) => <option key={w}>{w}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button
+          onClick={() => form.beschreibung.trim() && onSpeichern({ ...form, faelligkeitsdatum: form.faelligkeitsdatum ? `${form.faelligkeitsdatum}T12:00:00` : null })}
+          disabled={!form.beschreibung.trim()}
+          className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50"
+        >
+          Speichern
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const HomeHaushaltsaufgaben = ({ session }) => {
+  const userId = session?.user?.id;
+  const [loading, setLoading] = useState(true);
+  const [aufgaben, setAufgaben] = useState([]);
+  const [modal, setModal] = useState(null);
+  const [fehler, setFehler] = useState(null);
+  const [kategFilter, setKategFilter] = useState("");
+
+  const ladeDaten = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("todo_aufgaben")
+        .select("*")
+        .eq("user_id", userId)
+        .in("app_modus", ["home", "beides"])
+        .order("erledigt")
+        .order("faelligkeitsdatum", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      setAufgaben(data || []);
+    } catch (e) {
+      setFehler("Fehler beim Laden der Aufgaben.");
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => { ladeDaten(); }, [ladeDaten]);
+
+  const speichere = async (daten) => {
+    const payload = { ...daten, user_id: userId };
+    if (modal?.id) {
+      await supabase.from("todo_aufgaben").update(daten).eq("id", modal.id);
+    } else {
+      await supabase.from("todo_aufgaben").insert(payload);
+    }
+    setModal(null);
+    ladeDaten();
+  };
+
+  const toggleErledigt = async (a) => {
+    await supabase.from("todo_aufgaben").update({ erledigt: !a.erledigt }).eq("id", a.id);
+    ladeDaten();
+  };
+
+  const loesche = async (id) => {
+    if (!window.confirm("Aufgabe löschen?")) return;
+    await supabase.from("todo_aufgaben").delete().eq("id", id);
+    ladeDaten();
+  };
+
+  const prioritaetFarbe = (p) => {
+    if (p === "Hoch") return "text-red-500";
+    if (p === "Mittel") return "text-amber-500";
+    return "text-green-500";
+  };
+
+  const heute = new Date().toISOString().split("T")[0];
+
+  const gefilterteAufgaben = aufgaben.filter(
+    (a) => !kategFilter || a.kategorie === kategFilter
+  );
+
+  const offen = gefilterteAufgaben.filter((a) => !a.erledigt);
+  const erledigt = gefilterteAufgaben.filter((a) => a.erledigt);
+
+  if (loading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-light-text-secondary dark:text-dark-text-secondary" /></div>;
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 py-6">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <CheckSquare size={22} className="text-green-500" />
+          <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Haushaltsaufgaben</h1>
+          {offen.length > 0 && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold">{offen.length}</span>}
+        </div>
+        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+          <Plus size={14} />Neue Aufgabe
+        </button>
+      </div>
+
+      {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
+
+      {/* Kategorie-Filter */}
+      <div className="flex gap-2 flex-wrap mb-4">
+        <button onClick={() => setKategFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!kategFilter ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
+        {KATEGORIEN.map((k) => (
+          <button key={k} onClick={() => setKategFilter(k)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${kategFilter === k ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{k}</button>
+        ))}
+      </div>
+
+      {gefilterteAufgaben.length === 0 ? (
+        <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
+          <CheckSquare size={40} className="mx-auto mb-3 opacity-30" />
+          <p className="text-sm">Keine Aufgaben</p>
+          <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"><Plus size={14} />Erste Aufgabe erstellen</button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {offen.length > 0 && (
+            <div>
+              <h2 className="text-xs font-semibold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider mb-2">Offen ({offen.length})</h2>
+              <div className="space-y-2">
+                {offen.map((a) => {
+                  const ueberfaellig = a.faelligkeitsdatum && a.faelligkeitsdatum.split("T")[0] < heute;
+                  return (
+                    <div key={a.id} className={`flex items-start gap-3 bg-light-card dark:bg-dark-card rounded-xl border p-3 group ${ueberfaellig ? "border-red-500/40" : "border-light-border dark:border-dark-border"}`}>
+                      <button onClick={() => toggleErledigt(a)} className="mt-0.5 w-5 h-5 rounded border-2 border-light-border dark:border-dark-border hover:border-green-500 flex items-center justify-center flex-shrink-0 transition-colors">
+                        <div className="w-2 h-2 rounded-sm" />
+                      </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-light-text-main dark:text-dark-text-main">{a.beschreibung}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className={`text-xs font-medium ${prioritaetFarbe(a.prioritaet)}`}>{a.prioritaet}</span>
+                          <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{a.kategorie}</span>
+                          {a.faelligkeitsdatum && <span className={`text-xs ${ueberfaellig ? "text-red-500 font-medium" : "text-light-text-secondary dark:text-dark-text-secondary"}`}>{ueberfaellig ? "Überfällig: " : "Fällig: "}{a.faelligkeitsdatum.split("T")[0]}</span>}
+                          {a.wiederholung_typ && a.wiederholung_typ !== "Keine" && <span className="flex items-center gap-0.5 text-xs text-blue-500"><RefreshCw size={10} />{a.wiederholung_typ}</span>}
+                        </div>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => setModal(a)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500"><AlertCircle size={12} /></button>
+                        <button onClick={() => loesche(a.id)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500"><Trash2 size={12} /></button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {erledigt.length > 0 && (
+            <div>
+              <h2 className="text-xs font-semibold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider mb-2">Erledigt ({erledigt.length})</h2>
+              <div className="space-y-2">
+                {erledigt.slice(0, 5).map((a) => (
+                  <div key={a.id} className="flex items-center gap-3 bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 opacity-60 group">
+                    <button onClick={() => toggleErledigt(a)} className="w-5 h-5 rounded bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <Check size={11} className="text-white" />
+                    </button>
+                    <p className="flex-1 text-sm text-light-text-main dark:text-dark-text-main line-through">{a.beschreibung}</p>
+                    <button onClick={() => loesche(a.id)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 size={12} /></button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {modal !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border">
+            <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
+              <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">{modal.id ? "Aufgabe bearbeiten" : "Neue Aufgabe"}</h3>
+              <button onClick={() => setModal(null)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
+            </div>
+            <div className="p-4">
+              <AufgabeForm initial={modal.id ? modal : null} onSpeichern={speichere} onAbbrechen={() => setModal(null)} />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default HomeHaushaltsaufgaben;

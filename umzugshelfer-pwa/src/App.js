@@ -7,6 +7,19 @@ import {
 } from "react-router-dom";
 import { supabase } from "./supabaseClient";
 import { ThemeProvider } from "./contexts/ThemeContext"; // ThemeProvider importieren
+import { AppModeProvider, useAppMode } from "./contexts/AppModeContext"; // Home Organizer Modus
+
+// Home Organizer Komponenten
+import HomeDashboard from "./components/home/HomeDashboard";
+import HomeInventar from "./components/home/HomeInventar";
+import HomeGlobalSuche from "./components/home/HomeGlobalSuche";
+import HomeVorraete from "./components/home/HomeVorraete";
+import HomeEinkaufliste from "./components/home/HomeEinkaufliste";
+import HomeHaushaltsaufgaben from "./components/home/HomeHaushaltsaufgaben";
+import HomeGeraete from "./components/home/HomeGeraete";
+import HomeBudget from "./components/home/HomeBudget";
+import HomeProjekte from "./components/home/HomeProjekte";
+import HomeOnboarding from "./components/home/HomeOnboarding";
 
 import Navbar from "./components/Navbar";
 import Dashboard from "./components/Dashboard";
@@ -23,6 +36,8 @@ import RegisterPage from "./components/RegisterPage";
 import UmzugsZeitstrahl from "./components/UmzugsZeitstrahl"; // Importiert
 import DokumentenManager from "./components/DokumentenManager"; // NEU für Dokumentenablage
 import UpdatePasswordPage from "./components/UpdatePasswordPage"; // NEU für Passwort Reset
+import KostenVergleich from "./components/KostenVergleich";
+import useErinnerungen from "./hooks/useErinnerungen";
 import TodoListenFeaturePage from "./components/featurepages/TodoListenFeaturePage"; // NEU
 import PacklisteFeaturePage from "./components/featurepages/PacklisteFeaturePage"; // NEU
 import BudgetTrackerFeaturePage from "./components/featurepages/BudgetTrackerFeaturePage"; // NEU
@@ -33,9 +48,28 @@ import ZeitstrahlFeaturePage from "./components/featurepages/ZeitstrahlFeaturePa
 import KiAssistentenFeaturePage from "./components/featurepages/KiAssistentenFeaturePage"; // NEU
 import QrCodeFeaturePage from "./components/featurepages/QrCodeFeaturePage"; // NEU
 
+// Onboarding-Gate: zeigt Modusauswahl für neue Nutzer
+const OnboardingGate = ({ session, children }) => {
+  const { onboardingGezeigt, markOnboardingGezeigt, switchToHome, switchToUmzug } = useAppMode();
+
+  if (session && !onboardingGezeigt) {
+    return (
+      <>
+        {children}
+        <HomeOnboarding
+          onWaehleUmzug={() => { switchToUmzug(); markOnboardingGezeigt(); }}
+          onWaehleHome={() => { switchToHome(); markOnboardingGezeigt(); }}
+        />
+      </>
+    );
+  }
+  return children;
+};
+
 function App() {
   const [session, setSession] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  useErinnerungen(session?.user?.id);
 
   useEffect(() => {
     // const currentSession = supabase.auth.getSession(); // Entfernt, da nicht verwendet
@@ -101,9 +135,11 @@ function App() {
 
   return (
     <ThemeProvider>
+      <AppModeProvider>
       {" "}
-      {/* ThemeProvider umschließt den gesamten App-Inhalt */}
+      {/* AppModeProvider für Home Organizer Modus */}
       {/* <Router> wurde entfernt, da es wahrscheinlich in index.js ist */}
+      <OnboardingGate session={session}>
       <div className="flex flex-col min-h-screen bg-light-bg dark:bg-dark-bg">
         {" "}
         {/* Standard-Hintergrundfarben hier setzen */}
@@ -188,7 +224,7 @@ function App() {
               path="/bedarfsrechner" // NEUE ROUTE
               element={
                 <ProtectedRoute>
-                  <BedarfsrechnerPage /> {/* Bleibt für Material-Rechner */}
+                  <BedarfsrechnerPage session={session} />
                 </ProtectedRoute>
               }
             />
@@ -213,6 +249,88 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DokumentenManager session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kostenvergleich"
+              element={
+                <ProtectedRoute>
+                  <KostenVergleich session={session} />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Home Organizer Routen */}
+            <Route
+              path="/home"
+              element={
+                <ProtectedRoute>
+                  <HomeDashboard session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/inventar"
+              element={
+                <ProtectedRoute>
+                  <HomeInventar session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/suche"
+              element={
+                <ProtectedRoute>
+                  <HomeGlobalSuche session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/vorraete"
+              element={
+                <ProtectedRoute>
+                  <HomeVorraete session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/einkaufliste"
+              element={
+                <ProtectedRoute>
+                  <HomeEinkaufliste session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/aufgaben"
+              element={
+                <ProtectedRoute>
+                  <HomeHaushaltsaufgaben session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/geraete"
+              element={
+                <ProtectedRoute>
+                  <HomeGeraete session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/budget"
+              element={
+                <ProtectedRoute>
+                  <HomeBudget session={session} />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/home/projekte"
+              element={
+                <ProtectedRoute>
+                  <HomeProjekte session={session} />
                 </ProtectedRoute>
               }
             />
@@ -264,6 +382,8 @@ function App() {
           </Routes>
         </main>
       </div>
+      </OnboardingGate>
+      </AppModeProvider>
     </ThemeProvider>
   );
 }

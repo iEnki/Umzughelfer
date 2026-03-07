@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(npm install)",
+      "Bash(npx react-scripts build)",
+      "Bash(node_modules/.bin/react-scripts build)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(timeout 15)",
+      "Bash(powershell -Command \"Start-Sleep -Seconds 20; Write-Host ''done''\")"
+    ]
+  }
+}

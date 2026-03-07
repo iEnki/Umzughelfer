@@ -204,9 +204,10 @@ on public.todo_aufgaben for all
 using (auth.uid() = user_id)
 with check (auth.uid() = user_id);
 
--- To-Do Vorlagen
+-- To-Do Vorlagen (user_id nullable: NULL = globale Vorlage, gesetzt = persönliche Vorlage)
 create table if not exists public.todo_vorlagen (
   id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
   beschreibung text not null,
   kategorie text,
   prioritaet text default 'Mittel',
@@ -218,8 +219,8 @@ create table if not exists public.todo_vorlagen (
   created_at timestamptz default now()
 );
 
--- Seed todo_vorlagen (reset to defaults)
-delete from public.todo_vorlagen;
+-- Seed todo_vorlagen (nur globale Vorlagen zurücksetzen, persönliche bleiben erhalten)
+delete from public.todo_vorlagen where user_id is null;
 INSERT INTO public.todo_vorlagen (beschreibung, kategorie, prioritaet, faelligkeitsdatum_offset_tage, standard_anhaenge_text, sortier_reihenfolge)
 VALUES
 ('Mietvertrag alte Wohnung kündigen (Standard: 3 Monate Frist)', 'Verträge', 'Hoch', 90, NULL, 10),
@@ -266,7 +267,17 @@ alter table public.todo_vorlagen enable row level security;
 drop policy if exists todo_vorlagen_read on public.todo_vorlagen;
 create policy todo_vorlagen_read
 on public.todo_vorlagen for select to authenticated
-using (true);
+using (user_id is null or auth.uid() = user_id);
+
+drop policy if exists todo_vorlagen_insert on public.todo_vorlagen;
+create policy todo_vorlagen_insert
+on public.todo_vorlagen for insert to authenticated
+with check (auth.uid() = user_id);
+
+drop policy if exists todo_vorlagen_delete on public.todo_vorlagen;
+create policy todo_vorlagen_delete
+on public.todo_vorlagen for delete to authenticated
+using (auth.uid() = user_id);
 
 -- Packliste
 create table if not exists public.pack_kisten (
@@ -857,4 +868,75 @@ create index if not exists idx_materialien_kategorie on public.materialien(kateg
 create index if not exists idx_materialien_name on public.materialien(name);
 
 -- Refresh PostgREST schema cache (avoids stale relationships after migrations)
+select pg_notify('pgrst', 'reload schema');
+
+-- =============================================================================
+-- MIGRATIONEN (für bestehende Installationen)
+-- Neu-Installationen können diesen Abschnitt ignorieren – er ist idempotent.
+-- =============================================================================
+
+-- Migration 2026-03: Persönliche To-Do-Vorlagen
+-- Fügt user_id (nullable) zur todo_vorlagen Tabelle hinzu.
+-- NULL = globale Vorlage (Standard), gesetzt = persönliche Vorlage des Users.
+alter table public.todo_vorlagen
+  add column if not exists user_id uuid references auth.users(id) on delete cascade;
+
+-- SELECT: globale Vorlagen (user_id IS NULL) + eigene Vorlagen
+drop policy if exists todo_vorlagen_read on public.todo_vorlagen;
+create policy todo_vorlagen_read
+on public.todo_vorlagen for select to authenticated
+using (user_id is null or auth.uid() = user_id);
+
+-- INSERT: nur eigene Vorlagen erstellen
+drop policy if exists todo_vorlagen_insert on public.todo_vorlagen;
+create policy todo_vorlagen_insert
+on public.todo_vorlagen for insert to authenticated
+with check (auth.uid() = user_id);
+
+-- DELETE: nur eigene Vorlagen löschen
+drop policy if exists todo_vorlagen_delete on public.todo_vorlagen;
+create policy todo_vorlagen_delete
+on public.todo_vorlagen for delete to authenticated
+using (auth.uid() = user_id);
+
+-- =============================================================================
+-- Migration 2026-03: Priorität 2 Features
+-- =============================================================================
+
+-- 1. Kontakt-Bewertungen: bewertung (1-5 Sterne) und bemerkungen
+alter table public.kontakte
+  add column if not exists bewertung integer check (bewertung >= 1 and bewertung <= 5),
+  add column if not exists bemerkungen text;
+
+-- 2. Rechner-Szenarien: Gespeicherte Bedarfsrechner-Ergebnisse
+create table if not exists public.rechner_szenarien (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  name text not null,
+  rechner_typ text,
+  ergebnis text,
+  notizen text,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_rechner_szenarien_user_id on public.rechner_szenarien(user_id);
+
+alter table public.rechner_szenarien enable row level security;
+
+drop policy if exists rechner_szenarien_crud_own on public.rechner_szenarien;
+create policy rechner_szenarien_crud_own
+on public.rechner_szenarien for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+select pg_notify('pgrst', 'reload schema');
+
+-- =============================================================================
+-- Migration 2026-03: Priorität 3 Features
+-- =============================================================================
+
+-- 1. Auspacken-Workflow: ausgepakt_am Timestamp auf pack_gegenstaende
+alter table public.pack_gegenstaende
+  add column if not exists ausgepakt_am timestamptz;
+
 select pg_notify('pgrst', 'reload schema');

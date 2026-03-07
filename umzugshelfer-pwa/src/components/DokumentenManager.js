@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { supabase } from "../supabaseClient";
+import OpenAI from "openai";
 import { useTheme } from "../contexts/ThemeContext";
-import { Link, useLocation } from "react-router-dom"; // useNavigate entfernt
+import { Link, useLocation } from "react-router-dom";
 import {
   UploadCloud,
   FileText,
@@ -10,6 +11,9 @@ import {
   Trash2,
   Download,
   Link2,
+  Sparkles,
+  Check,
+  X,
 } from "lucide-react";
 
 const DokumentenManager = ({ session }) => {
@@ -23,6 +27,8 @@ const DokumentenManager = ({ session }) => {
   const [beschreibung, setBeschreibung] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [zugehoerigeAufgabeId, setZugehoerigeAufgabeId] = useState("");
+  const [kiVorschlag, setKiVorschlag] = useState(null); // {dokumentId, beschreibung, hinweis}
+  const [kiLaed, setKiLaed] = useState(false);
 
   const userId = session?.user?.id;
 
@@ -72,6 +78,61 @@ const DokumentenManager = ({ session }) => {
     multiple: false,
   });
 
+  const analyzeDocumentWithAI = async (dokumentId, dateiname, dateiTyp) => {
+    try {
+      const { data: profile } = await supabase
+        .from("user_profile")
+        .select("openai_api_key")
+        .eq("id", userId)
+        .single();
+      if (!profile?.openai_api_key) return;
+
+      setKiLaed(true);
+      const openai = new OpenAI({ apiKey: profile.openai_api_key, dangerouslyAllowBrowser: true });
+      const prompt = `Du hilfst beim Kategorisieren von Umzugsdokumenten. Analysiere den Dateinamen und den Dateityp und gib eine kurze Beschreibung und einen Kategoriehinweis zurück.
+
+Dateiname: "${dateiname}"
+Dateityp: "${dateiTyp || "unbekannt"}"
+
+Antworte als JSON: {"beschreibung": "kurze Beschreibung was das Dokument wahrscheinlich ist (max 60 Zeichen)", "kategorie_hinweis": "z.B. Mietvertrag, Rechnung, Versicherung, Behörde, Gesundheit, Sonstiges"}
+
+Antworte nur mit dem JSON.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.1,
+      });
+
+      const raw = response.choices[0].message.content;
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        setKiVorschlag({ dokumentId, ...parsed });
+      }
+    } catch (err) {
+      // silent fail — KI-Funktion ist optional
+    } finally {
+      setKiLaed(false);
+    }
+  };
+
+  const applyKiVorschlag = async () => {
+    if (!kiVorschlag) return;
+    try {
+      await supabase
+        .from("dokumente")
+        .update({ beschreibung: `${kiVorschlag.beschreibung} [${kiVorschlag.kategorie_hinweis}]` })
+        .eq("id", kiVorschlag.dokumentId)
+        .eq("user_id", userId);
+      fetchDokumente();
+    } catch (err) {
+      // ignore
+    } finally {
+      setKiVorschlag(null);
+    }
+  };
+
   const handleUpload = async () => {
     if (!selectedFile || !userId) {
       setError("Bitte wählen Sie eine Datei aus.");
@@ -79,6 +140,7 @@ const DokumentenManager = ({ session }) => {
     }
     setUploading(true);
     setError("");
+    setKiVorschlag(null);
 
     const fileName = `${Date.now()}_${selectedFile.name.replace(/\s/g, "_")}`;
     const filePath = `${userId}/${fileName}`;
@@ -100,14 +162,21 @@ const DokumentenManager = ({ session }) => {
         todo_aufgabe_id: zugehoerigeAufgabeId || null,
       };
 
-      const { error: dbError } = await supabase
+      const { data: inserted, error: dbError } = await supabase
         .from("dokumente")
-        .insert(newDokument);
+        .insert(newDokument)
+        .select()
+        .single();
       if (dbError) throw dbError;
 
       fetchDokumente();
       setSelectedFile(null);
       setBeschreibung("");
+
+      // KI-Analyse starten, wenn noch keine Beschreibung eingegeben wurde
+      if (!beschreibung && inserted?.id) {
+        analyzeDocumentWithAI(inserted.id, selectedFile.name, selectedFile.type);
+      }
     } catch (err) {
       console.error("Upload Fehler:", err);
       setError(`Upload fehlgeschlagen: ${err.message}`);
@@ -278,6 +347,51 @@ const DokumentenManager = ({ session }) => {
         </button>
         {error && <p className="text-red-500 mt-2 text-sm">{error}</p>}
       </div>
+
+      {/* KI-Vorschlag Banner */}
+      {(kiLaed || kiVorschlag) && (
+        <div className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${
+          theme === "dark"
+            ? "bg-dark-card-bg border-dark-accent-green/40"
+            : "bg-light-card-bg border-light-accent-green/40"
+        }`}>
+          <Sparkles size={18} className="text-light-accent-green dark:text-dark-accent-green flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            {kiLaed ? (
+              <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
+                KI analysiert das Dokument...
+              </p>
+            ) : kiVorschlag ? (
+              <>
+                <p className="text-sm font-medium text-light-text-main dark:text-dark-text-main mb-0.5">
+                  KI-Vorschlag: <span className="font-normal">{kiVorschlag.beschreibung}</span>
+                </p>
+                <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">
+                  Kategorie: {kiVorschlag.kategorie_hinweis}
+                </p>
+              </>
+            ) : null}
+          </div>
+          {kiVorschlag && !kiLaed && (
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={applyKiVorschlag}
+                className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-light-accent-green dark:bg-dark-accent-green text-white dark:text-dark-bg hover:opacity-90"
+                title="Vorschlag übernehmen"
+              >
+                <Check size={13} /> Übernehmen
+              </button>
+              <button
+                onClick={() => setKiVorschlag(null)}
+                className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500"
+                title="Vorschlag ablehnen"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       <div>
         <h2 className="text-xl font-semibold mb-4">Hochgeladene Dokumente</h2>

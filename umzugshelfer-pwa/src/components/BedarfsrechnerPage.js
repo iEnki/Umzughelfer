@@ -3,18 +3,20 @@ import BedarfsrechnerFarbe from "./BedarfsrechnerFarbe";
 import BedarfsrechnerBoden from "./BedarfsrechnerBoden";
 import BedarfsrechnerTapete from "./BedarfsrechnerTapete";
 import BedarfsrechnerDaemmstoff from "./BedarfsrechnerDaemmstoff"; // NEU
+import RechnerSzenarienManager from "./RechnerSzenarienManager";
 import {
   Calculator,
   PaintBucket,
   Layers,
   Wallpaper,
   ThermometerSnowflake,
-} from "lucide-react"; // Icon hinzugefügt
-import { useTheme } from "../contexts/ThemeContext"; // Import hinzugefügt
+  BookmarkCheck,
+} from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
 
-const BedarfsrechnerPage = () => {
+const BedarfsrechnerPage = ({ session }) => {
   const [activeCalculator, setActiveCalculator] = useState("farbe");
-  const { theme } = useTheme(); // Theme holen
+  const { theme } = useTheme();
 
   const calculatorTypes = [
     {
@@ -48,9 +50,18 @@ const BedarfsrechnerPage = () => {
       id: "daemmstoff",
       name: "Dämmstoff",
       Icon: ThermometerSnowflake,
-      lightColor: "text-sky-600", // Helleres Sky für Light Mode
+      lightColor: "text-sky-600",
       darkColor: "text-sky-400",
       lightBgActive: "bg-sky-100",
+      darkBgActive: "bg-dark-bg",
+    },
+    {
+      id: "szenarien",
+      name: "Szenarien",
+      Icon: BookmarkCheck,
+      lightColor: "text-amber-600",
+      darkColor: "text-amber-400",
+      lightBgActive: "bg-amber-100",
       darkBgActive: "bg-dark-bg",
     },
   ];
@@ -63,10 +74,12 @@ const BedarfsrechnerPage = () => {
         return <BedarfsrechnerBoden />;
       case "tapete":
         return <BedarfsrechnerTapete />;
-      case "daemmstoff": // NEU
-        return <BedarfsrechnerDaemmstoff />; // NEU
+      case "daemmstoff":
+        return <BedarfsrechnerDaemmstoff />;
+      case "szenarien":
+        return <RechnerSzenarienManager session={session} />;
       default:
-        return <BedarfsrechnerFarbe />; // Fallback
+        return <BedarfsrechnerFarbe />;
     }
   };
 

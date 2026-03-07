@@ -16,6 +16,7 @@ import {
   List,
   FilePlus,
   FileText,
+  BookMarked,
 } from "lucide-react";
 // import { Link } from "react-router-dom";
 import { generateIcsData, downloadIcsFile } from "../utils/calendarUtils";
@@ -416,6 +417,11 @@ const TodoListenManager = ({ session }) => {
   const [showDokumentenModal, setShowDokumentenModal] = useState(false);
   const [aktuelleAufgabeFuerDokumente, setAktuelleAufgabeFuerDokumente] =
     useState(null);
+  const [showVorlagenModal, setShowVorlagenModal] = useState(false);
+  const [meineVorlagen, setMeineVorlagen] = useState([]);
+  const [neueVorlageBeschreibung, setNeueVorlageBeschreibung] = useState("");
+  const [neueVorlageKategorie, setNeueVorlageKategorie] = useState("");
+  const [neueVorlagePrioritaet, setNeueVorlagePrioritaet] = useState("Mittel");
 
   useEffect(() => {
     setUserId(session?.user?.id || null);
@@ -447,6 +453,60 @@ const TodoListenManager = ({ session }) => {
       // Optional: setError state für Vorlagen-Ladefehler setzen
     }
   }, []);
+
+  const fetchMeineVorlagen = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("todo_vorlagen")
+        .select("*")
+        .eq("user_id", userId)
+        .order("beschreibung", { ascending: true });
+      if (fetchError) throw fetchError;
+      setMeineVorlagen(data || []);
+    } catch (err) {
+      console.error("Fehler beim Laden eigener Vorlagen:", err);
+    }
+  }, [userId]);
+
+  const handleVorlageErstellen = async (e) => {
+    e.preventDefault();
+    if (!userId || !neueVorlageBeschreibung || !neueVorlageKategorie) return;
+    try {
+      const { error: insertError } = await supabase
+        .from("todo_vorlagen")
+        .insert([{
+          user_id: userId,
+          beschreibung: neueVorlageBeschreibung,
+          kategorie: neueVorlageKategorie,
+          prioritaet: neueVorlagePrioritaet,
+          sortier_reihenfolge: 999,
+        }]);
+      if (insertError) throw insertError;
+      setNeueVorlageBeschreibung("");
+      setNeueVorlageKategorie("");
+      setNeueVorlagePrioritaet("Mittel");
+      await fetchMeineVorlagen();
+      await fetchVorlagen();
+    } catch (err) {
+      alert(`Fehler beim Erstellen der Vorlage: ${err.message}`);
+    }
+  };
+
+  const handleVorlageLoeschen = async (vorlageId) => {
+    if (!userId || !window.confirm("Vorlage löschen?")) return;
+    try {
+      const { error: deleteError } = await supabase
+        .from("todo_vorlagen")
+        .delete()
+        .match({ id: vorlageId, user_id: userId });
+      if (deleteError) throw deleteError;
+      await fetchMeineVorlagen();
+      await fetchVorlagen();
+    } catch (err) {
+      alert(`Fehler: ${err.message}`);
+    }
+  };
 
   const fetchBudgetPosten = useCallback(async () => {
     if (!userId) {
@@ -541,14 +601,16 @@ const TodoListenManager = ({ session }) => {
     if (userId) {
       fetchAufgaben();
       fetchBudgetPosten();
-      fetchVorlagen(); // Vorlagen laden
+      fetchVorlagen();
+      fetchMeineVorlagen();
     } else {
       setAufgaben([]);
       setBudgetPostenListe([]);
-      setAufgabenVorlagenDB([]); // Auch DB-Vorlagen leeren
+      setAufgabenVorlagenDB([]);
+      setMeineVorlagen([]);
       setLoading(false);
     }
-  }, [userId, fetchAufgaben, fetchBudgetPosten, fetchVorlagen]);
+  }, [userId, fetchAufgaben, fetchBudgetPosten, fetchVorlagen, fetchMeineVorlagen]);
 
   const handleBeschreibungChange = (e) => {
     const neueBeschreibung = e.target.value;
@@ -754,6 +816,20 @@ const TodoListenManager = ({ session }) => {
       alert(`Fehler: ${err.message}`);
     }
   };
+  const berechnNaechstesDatum = (basisDatum, typ, intervall) => {
+    if (!basisDatum || !typ || typ === "Keine") return null;
+    const datum = new Date(basisDatum);
+    const n = parseInt(intervall, 10) || 1;
+    switch (typ) {
+      case "Täglich": datum.setDate(datum.getDate() + n); break;
+      case "Wöchentlich": datum.setDate(datum.getDate() + 7 * n); break;
+      case "Monatlich": datum.setMonth(datum.getMonth() + n); break;
+      case "Jährlich": datum.setFullYear(datum.getFullYear() + n); break;
+      default: return null;
+    }
+    return datum.toISOString();
+  };
+
   const handleToggleErledigt = async (id, aktuellerStatus) => {
     if (!userId) return;
     try {
@@ -762,6 +838,35 @@ const TodoListenManager = ({ session }) => {
         .update({ erledigt: !aktuellerStatus })
         .match({ id, user_id: userId });
       if (toggleError) throw toggleError;
+
+      // Wenn Aufgabe als erledigt markiert wird und Wiederholung gesetzt ist → neue Aufgabe anlegen
+      if (!aktuellerStatus) {
+        const erledigteAufgabe = aufgaben.find((a) => a.id === id);
+        if (
+          erledigteAufgabe &&
+          erledigteAufgabe.wiederholung_typ &&
+          erledigteAufgabe.wiederholung_typ !== "Keine"
+        ) {
+          const naechstesDatum = berechnNaechstesDatum(
+            erledigteAufgabe.faelligkeitsdatum || new Date().toISOString(),
+            erledigteAufgabe.wiederholung_typ,
+            erledigteAufgabe.wiederholung_intervall
+          );
+          if (naechstesDatum) {
+            await supabase.from("todo_aufgaben").insert([{
+              user_id: userId,
+              beschreibung: erledigteAufgabe.beschreibung,
+              kategorie: erledigteAufgabe.kategorie,
+              prioritaet: erledigteAufgabe.prioritaet,
+              faelligkeitsdatum: naechstesDatum,
+              wiederholung_typ: erledigteAufgabe.wiederholung_typ,
+              wiederholung_intervall: erledigteAufgabe.wiederholung_intervall,
+              erledigt: false,
+            }]);
+          }
+        }
+      }
+
       fetchAufgaben();
     } catch (err) {
       alert(`Fehler: ${err.message}`);
@@ -1441,6 +1546,14 @@ const TodoListenManager = ({ session }) => {
             <List size={18} />{" "}
           </button>
           <button
+            onClick={() => { setShowVorlagenModal(true); fetchMeineVorlagen(); }}
+            disabled={!userId}
+            className="flex items-center bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md transition-colors shadow-sm text-sm disabled:opacity-50"
+            title="Meine Vorlagen verwalten"
+          >
+            <BookMarked size={18} className="mr-1.5" /> Vorlagen
+          </button>
+          <button
             onClick={() => setShowKiTodoAssistent(!showKiTodoAssistent)}
             disabled={!userId}
             className="flex items-center bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white px-3 py-1.5 rounded-md transition-colors shadow-sm text-sm disabled:opacity-50"
@@ -1751,6 +1864,88 @@ const TodoListenManager = ({ session }) => {
         slides={lightboxSlides}
         index={lightboxIndex}
       />
+      {showVorlagenModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-start py-4 px-3 z-50 overflow-y-auto">
+          <div className="bg-light-card-bg dark:bg-dark-card-bg p-5 rounded-lg shadow-xl w-full max-w-md relative border border-light-border dark:border-dark-border">
+            <button
+              onClick={() => setShowVorlagenModal(false)}
+              className="absolute top-2.5 right-2.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"
+            >
+              <XCircle size={20} />
+            </button>
+            <h3 className="text-lg font-semibold text-light-text-main dark:text-dark-text-main mb-4">
+              Meine Vorlagen
+            </h3>
+            <form onSubmit={handleVorlageErstellen} className="space-y-2 mb-5 pb-4 border-b border-light-border dark:border-dark-border">
+              <p className="text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary">Neue Vorlage erstellen</p>
+              <input
+                type="text"
+                placeholder="Beschreibung *"
+                value={neueVorlageBeschreibung}
+                onChange={(e) => setNeueVorlageBeschreibung(e.target.value)}
+                required
+                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
+              />
+              <input
+                type="text"
+                placeholder="Kategorie *"
+                value={neueVorlageKategorie}
+                onChange={(e) => setNeueVorlageKategorie(e.target.value)}
+                required
+                list="kategorie-vorschlaege-vorlage"
+                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
+              />
+              <datalist id="kategorie-vorschlaege-vorlage">
+                {standardKategorien.map((kat) => <option key={kat} value={kat} />)}
+              </datalist>
+              <select
+                value={neueVorlagePrioritaet}
+                onChange={(e) => setNeueVorlagePrioritaet(e.target.value)}
+                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
+              >
+                <option value="Hoch">Hoch</option>
+                <option value="Mittel">Mittel</option>
+                <option value="Niedrig">Niedrig</option>
+              </select>
+              <button
+                type="submit"
+                className="w-full px-3 py-1.5 text-sm text-white dark:text-dark-bg bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-md"
+              >
+                Vorlage speichern
+              </button>
+            </form>
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-2">
+                Gespeicherte Vorlagen ({meineVorlagen.length})
+              </p>
+              {meineVorlagen.length === 0 ? (
+                <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary text-center py-3">
+                  Noch keine eigenen Vorlagen erstellt.
+                </p>
+              ) : (
+                meineVorlagen.map((v) => (
+                  <div
+                    key={v.id}
+                    className="flex items-center justify-between p-2.5 rounded-md bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-light-text-main dark:text-dark-text-main">{v.beschreibung}</p>
+                      <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{v.kategorie} · {v.prioritaet}</p>
+                    </div>
+                    <button
+                      onClick={() => handleVorlageLoeschen(v.id)}
+                      className="p-1 rounded text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500"
+                      title="Vorlage löschen"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       {showDokumentenModal && aktuelleAufgabeFuerDokumente && (
         <DokumentenZuordnungModal
           session={session}

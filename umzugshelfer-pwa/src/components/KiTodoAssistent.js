@@ -10,9 +10,11 @@ import {
   StopCircle,
   UploadCloud,
   CheckSquare,
-  HelpCircle, // Icon für Hilfe
-  ChevronDown, // Icon für Ausklappen
-  ChevronUp, // Icon für Einklappen
+  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Type,
+  Send,
 } from "lucide-react";
 
 const KiTodoAssistent = ({ session, onTodosExtracted }) => {
@@ -26,7 +28,9 @@ const KiTodoAssistent = ({ session, onTodosExtracted }) => {
   const [error, setError] = useState("");
   const [extractedTodos, setExtractedTodos] = useState([]);
   const [toastMessage, setToastMessage] = useState({ text: "", type: "" });
-  const [showHelp, setShowHelp] = useState(false); // Hinzugefügt für Hilfe
+  const [showHelp, setShowHelp] = useState(false);
+  const [inputModus, setInputModus] = useState("sprache"); // "sprache" | "text"
+  const [textEingabe, setTextEingabe] = useState("");
 
   useEffect(() => {
     const loadApiKey = async () => {
@@ -365,56 +369,108 @@ Antworte nur mit dem JSON-Array.`;
       )}
       {isApiKeySet && (
         <div className="space-y-3">
-          <div style={{ display: isRecording ? "block" : "none" }}>
-            <ReactMic
-              record={isRecording}
-              className="sound-wave w-full h-20"
-              onStop={onStopRecording}
-              strokeColor="#60A5FA"
-              backgroundColor="#374151"
-              mimeType="audio/webm"
-            />
+          {/* Modus-Umschalter */}
+          <div className="flex gap-2 border border-dark-border rounded-lg p-1 w-fit">
+            <button
+              onClick={() => setInputModus("sprache")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                inputModus === "sprache"
+                  ? "bg-blue-500 text-white"
+                  : "text-dark-text-secondary hover:text-dark-text-main"
+              }`}
+            >
+              <Mic size={15} /> Sprache
+            </button>
+            <button
+              onClick={() => setInputModus("text")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                inputModus === "text"
+                  ? "bg-blue-500 text-white"
+                  : "text-dark-text-secondary hover:text-dark-text-main"
+              }`}
+            >
+              <Type size={15} /> Text
+            </button>
           </div>
-          {!isRecording ? (
-            <button
-              onClick={handleStartRecording}
-              disabled={isLoading}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center justify-center gap-2 disabled:opacity-70"
-            >
-              <Mic size={18} />{" "}
-              {transcribedText || extractedTodos.length > 0
-                ? "Neue To-Do Spracheingabe"
-                : "To-Do Spracheingabe starten"}
-            </button>
+
+          {inputModus === "sprache" ? (
+            <>
+              <div style={{ display: isRecording ? "block" : "none" }}>
+                <ReactMic
+                  record={isRecording}
+                  className="sound-wave w-full h-20"
+                  onStop={onStopRecording}
+                  strokeColor="#60A5FA"
+                  backgroundColor="#374151"
+                  mimeType="audio/webm"
+                />
+              </div>
+              {!isRecording ? (
+                <button
+                  onClick={handleStartRecording}
+                  disabled={isLoading}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center justify-center gap-2 disabled:opacity-70"
+                >
+                  <Mic size={18} />{" "}
+                  {transcribedText || extractedTodos.length > 0
+                    ? "Neue To-Do Spracheingabe"
+                    : "To-Do Spracheingabe starten"}
+                </button>
+              ) : (
+                <button
+                  onClick={handleStopRecording}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm flex items-center justify-center gap-2"
+                >
+                  <StopCircle size={18} /> Aufnahme stoppen & Verarbeiten
+                </button>
+              )}
+              {transcribedText &&
+                !isLoading &&
+                extractedTodos.length === 0 &&
+                !error && (
+                  <div className="p-3 bg-dark-input border border-dark-border rounded-md">
+                    <p className="text-sm text-dark-text-secondary mb-1">
+                      Erkannter Text (wird automatisch verarbeitet):
+                    </p>
+                    <p className="text-dark-text-main italic">{transcribedText}</p>
+                  </div>
+                )}
+            </>
           ) : (
-            <button
-              onClick={handleStopRecording}
-              className="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm flex items-center justify-center gap-2"
-            >
-              <StopCircle size={18} /> Aufnahme stoppen & Verarbeiten
-            </button>
+            <>
+              <textarea
+                value={textEingabe}
+                onChange={(e) => setTextEingabe(e.target.value)}
+                rows={4}
+                placeholder="To-Dos als Text eingeben, z.B.: Arzttermin vereinbaren, Priorität Hoch. Ummelden bis Ende des Monats."
+                className="w-full px-3 py-2 border border-dark-border rounded-md text-sm bg-dark-input text-dark-text-main placeholder-dark-text-secondary focus:ring-1 focus:ring-blue-500 resize-none"
+              />
+              <button
+                onClick={() => {
+                  if (textEingabe.trim()) {
+                    setExtractedTodos([]);
+                    setError("");
+                    handleProcessTextWithGPT(textEingabe.trim());
+                  }
+                }}
+                disabled={isLoading || !textEingabe.trim()}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                <Send size={16} /> Text analysieren
+              </button>
+            </>
           )}
+
           {isLoading && (
             <div className="text-center py-2">
               <p className="text-sm text-dark-text-secondary flex items-center justify-center gap-2">
                 <UploadCloud size={16} className="animate-pulse" />{" "}
-                {transcribedText
-                  ? "KI analysiert Text..."
-                  : "Transkription läuft..."}
+                {inputModus === "sprache" && !transcribedText
+                  ? "Transkription läuft..."
+                  : "KI analysiert Text..."}
               </p>
             </div>
           )}
-          {transcribedText &&
-            !isLoading &&
-            extractedTodos.length === 0 &&
-            !error && (
-              <div className="p-3 bg-dark-input border border-dark-border rounded-md">
-                <p className="text-sm text-dark-text-secondary mb-1">
-                  Erkannter Text (wird automatisch verarbeitet):
-                </p>
-                <p className="text-dark-text-main italic">{transcribedText}</p>
-              </div>
-            )}
         </div>
       )}
       {error && !isLoading && (
