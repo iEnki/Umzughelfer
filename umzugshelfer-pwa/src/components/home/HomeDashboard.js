@@ -154,8 +154,8 @@ const HomeDashboard = ({ session }) => {
     <div className="max-w-5xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-          <Home size={22} className="text-green-500" />
+        <div className="w-10 h-10 rounded-xl bg-primary-500/10 flex items-center justify-center">
+          <Home size={22} className="text-primary-500" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">
@@ -187,7 +187,7 @@ const HomeDashboard = ({ session }) => {
             <button
               key={k.pfad}
               onClick={() => navigate(k.pfad)}
-              className="relative p-4 rounded-xl bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border hover:border-green-500/50 transition-all duration-200 text-left group"
+              className="relative p-4 rounded-xl bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border hover:border-primary-500/50 transition-all duration-200 text-left group"
             >
               {k.warnung && (
                 <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500" />
@@ -230,7 +230,7 @@ const HomeDashboard = ({ session }) => {
             <button
               key={item.pfad}
               onClick={() => navigate(item.pfad)}
-              className="flex items-center gap-2 p-3 rounded-lg bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border hover:bg-light-hover dark:hover:bg-dark-hover transition-colors text-sm text-light-text-main dark:text-dark-text-main"
+              className="flex items-center gap-2 p-3 rounded-lg bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border hover:bg-light-hover dark:hover:bg-canvas-3 transition-colors text-sm text-light-text-main dark:text-dark-text-main"
             >
               <span>{item.icon}</span>
               {item.label}

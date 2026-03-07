@@ -4,7 +4,8 @@
 
 html {
   height: 100%;
-  overflow-x: hidden; /* Verhindert horizontales Scrollen/Verschieben auf html-Ebene */
+  overflow-x: hidden;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 body {
@@ -17,22 +18,36 @@ body {
     "Segoe UI Symbol";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Standard (Light Mode) Farben werden durch Tailwind Klassen in App.js gesetzt (bg-light-bg, text-light-text-main) */
-  /* Die spezifischen Dark Mode Farben werden durch html.dark body ... oder Tailwind dark: Präfixe gesteuert */
   line-height: 1.6;
+  transition: background-color 200ms ease;
 }
 
-/* Globale Textfarbe für Light und Dark Mode über Tailwind Utility-Klassen setzen */
-/* Dies kann auch direkt im Body-Tag der public/index.html oder im Root-React-Component erfolgen */
-/* Beispiel: text-light-text-main dark:text-dark-text-main */
+/* Dark Mode Ambient Glow */
+.dark body {
+  background-color: #061015;
+  background-image:
+    radial-gradient(ellipse 800px 600px at 10% 0%, rgba(16,185,129,0.04) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 500px at 90% 100%, rgba(6,182,212,0.03) 0%, transparent 70%);
+  background-attachment: fixed;
+}
 
-/* Entferne die expliziten background-color und color hier, da sie jetzt von Tailwind Klassen in App.js kommen */
-/* und durch den ThemeProvider dynamisch gesteuert werden. */
+/* Optionales Dot-Grid für Premium-Dark-Feel */
+.dark body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
-/* Die @layer utilities für animate-pulse-once wurde entfernt, 
-   da die Animation jetzt in tailwind.config.js definiert ist. */
+@layer utilities {
+  .glass-dark  { background: rgba(10,20,26,0.75); backdrop-filter: blur(12px); }
+  .glass-light { background: rgba(241,245,249,0.80); backdrop-filter: blur(12px); }
+}
