@@ -333,7 +333,7 @@ const KontaktManager = ({ session }) => {
     );
 
   return (
-    <div className="space-y-4 p-3 md:p-4 lg:p-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
         <h2 className="text-2xl font-bold text-light-text-main dark:text-dark-text-main">
           Kontakt-Manager
@@ -342,14 +342,14 @@ const KontaktManager = ({ session }) => {
           <button
             onClick={handleAddNewClick}
             disabled={!userId}
-            className="bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg px-3 py-1.5 rounded-md shadow hover:opacity-90 flex items-center space-x-1.5 text-sm disabled:opacity-50"
+            className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-pill shadow-elevation-2 hover:opacity-90 flex items-center space-x-1.5 text-sm disabled:opacity-50"
           >
             <UserPlus size={18} /> <span>Neuer Kontakt</span>
           </button>
           <button
             onClick={handleVcardExport}
             disabled={!userId || kontakte.length === 0}
-            className="bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-md shadow hover:opacity-80 flex items-center space-x-1.5 text-sm disabled:opacity-40"
+            className="bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-pill shadow-elevation-2 hover:opacity-80 flex items-center space-x-1.5 text-sm disabled:opacity-40"
             title="Alle Kontakte als .vcf exportieren"
           >
             <Download size={18} /> <span>vCard Export</span>
@@ -357,7 +357,7 @@ const KontaktManager = ({ session }) => {
           <button
             onClick={() => vcardImportRef.current?.click()}
             disabled={!userId}
-            className="bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-md shadow hover:opacity-80 flex items-center space-x-1.5 text-sm disabled:opacity-40"
+            className="bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-pill shadow-elevation-2 hover:opacity-80 flex items-center space-x-1.5 text-sm disabled:opacity-40"
             title=".vcf Datei importieren"
           >
             <Upload size={18} /> <span>vCard Import</span>
@@ -377,14 +377,14 @@ const KontaktManager = ({ session }) => {
           placeholder="Suchen..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="w-full pl-9 pr-3 py-2 border border-light-border dark:border-dark-border rounded-md focus:ring-1 focus:ring-light-accent-green dark:focus:ring-dark-accent-green shadow-sm text-sm text-light-text-main dark:text-dark-text-main bg-white dark:bg-dark-border placeholder-light-text-secondary dark:placeholder-dark-text-secondary"
+          className="w-full pl-9 pr-3 py-2 border border-light-border dark:border-dark-border rounded-card-sm focus:ring-2 focus:ring-secondary-500 shadow-sm text-sm text-light-text-main dark:text-dark-text-main bg-white dark:bg-dark-border placeholder-light-text-secondary dark:placeholder-dark-text-secondary"
         />
         <Search
           className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-light-text-secondary dark:text-dark-text-secondary"
           size={18}
         />
       </div>
-      <div className="mb-3 p-3 border border-light-border dark:border-dark-border rounded-md bg-light-card-bg/80 dark:bg-dark-card-bg/50">
+      <div className="mb-3 p-3 border border-light-border dark:border-dark-border rounded-card-sm bg-light-card-bg/80 dark:bg-canvas-2/50">
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">
           Kartendienst für Adressen:
         </label>
@@ -393,7 +393,7 @@ const KontaktManager = ({ session }) => {
             <button
               key={service}
               onClick={() => handleMapServiceChange(service)}
-              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
+              className={`px-2.5 py-1 text-xs font-medium rounded-card-sm transition-colors ${
                 selectedMapService === service
                   ? "bg-light-accent-blue text-white dark:bg-dark-accent-blue dark:text-white shadow-sm"
                   : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
@@ -413,9 +413,9 @@ const KontaktManager = ({ session }) => {
           <button
             key={typOption}
             onClick={() => handleFilterChange(typOption)}
-            className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+            className={`px-3 py-1 text-xs font-medium rounded-card-sm transition-colors ${
               filterTyp === typOption
-                ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg shadow-sm"
+                ? "bg-primary-500 text-white shadow-sm"
                 : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
@@ -434,7 +434,7 @@ const KontaktManager = ({ session }) => {
 
       {userId && showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-center p-3 z-50">
-          <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-xl w-full max-w-md relative border border-light-border dark:border-dark-border">
+          <div className="bg-light-card-bg dark:bg-canvas-2 p-4 rounded-card shadow-elevation-3 w-full max-w-md relative border border-light-border dark:border-dark-border">
             <button
               onClick={() => setShowForm(false)}
               className="absolute top-3 right-3 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"
@@ -458,7 +458,7 @@ const KontaktManager = ({ session }) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500"
                 />
               </div>
               <div>
@@ -472,7 +472,7 @@ const KontaktManager = ({ session }) => {
                   id="kontaktTyp"
                   value={typ}
                   onChange={(e) => setTyp(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-primary-500"
                 >
                   {Object.keys(kontaktTypMeta).map((key) => (
                     <option key={key} value={key}>
@@ -494,7 +494,7 @@ const KontaktManager = ({ session }) => {
                   value={telefon}
                   onChange={(e) => setTelefon(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500"
                 />
               </div>
               <div>
@@ -510,7 +510,7 @@ const KontaktManager = ({ session }) => {
                   value={adresse}
                   onChange={(e) => setAdresse(e.target.value)}
                   placeholder="Straße Hausnummer, PLZ Ort"
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500"
                 />
               </div>
               <div>
@@ -525,7 +525,7 @@ const KontaktManager = ({ session }) => {
                   value={notiz}
                   onChange={(e) => setNotiz(e.target.value)}
                   rows="2"
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500"
                 />
               </div>
               <div>
@@ -566,20 +566,20 @@ const KontaktManager = ({ session }) => {
                   onChange={(e) => setBemerkungen(e.target.value)}
                   rows="2"
                   placeholder="z.B. Preis, Verfügbarkeit, Empfehlung..."
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500"
                 />
               </div>
               <div className="flex justify-end space-x-2 pt-1">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-3 py-1.5 text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary bg-light-border dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  className="px-3 py-1.5 text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary bg-light-border dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-gray-700 rounded-pill"
                 >
                   Abbrechen
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 text-xs font-medium text-white dark:text-dark-bg bg-light-accent-green dark:bg-dark-accent-green hover:opacity-90 rounded-md shadow-sm"
+                  className="px-3 py-1.5 text-xs font-medium text-white bg-primary-500 hover:bg-primary-600 hover:opacity-90 rounded-pill shadow-elevation-2"
                 >
                   {editingKontaktId ? "Speichern" : "Hinzufügen"}
                 </button>
@@ -620,7 +620,7 @@ const KontaktManager = ({ session }) => {
                         return (
                           <div
                             key={kontakt.id}
-                            className="bg-light-card-bg dark:bg-dark-card-bg p-3 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 flex flex-col space-y-1.5 group self-start border border-light-border dark:border-dark-border/50"
+                            className="bg-light-card-bg dark:bg-canvas-2 p-3 rounded-card shadow-elevation-2 hover:shadow-elevation-2 transition-shadow duration-200 flex flex-col space-y-1.5 group self-start border border-light-border dark:border-dark-border/50"
                           >
                             <div className="flex items-center space-x-2.5">
                               <div
@@ -641,11 +641,11 @@ const KontaktManager = ({ session }) => {
                             </div>
                             <a
                               href={`tel:${kontakt.telefon}`}
-                              className="text-light-accent-green dark:text-dark-accent-green hover:opacity-80 flex items-center text-xs group pt-0.5"
+                              className="text-primary-500 hover:opacity-80 flex items-center text-xs group pt-0.5"
                             >
                               <Phone
                                 size={14}
-                                className="mr-1.5 text-light-text-secondary dark:text-dark-text-secondary group-hover:text-light-accent-green dark:group-hover:text-dark-accent-green"
+                                className="mr-1.5 text-light-text-secondary dark:text-dark-text-secondary group-hover:text-primary-500"
                               />{" "}
                               <span>{kontakt.telefon}</span>
                             </a>
@@ -706,7 +706,7 @@ const KontaktManager = ({ session }) => {
                                 }}
                                 disabled={!userId}
                                 title="Bearbeiten"
-                                className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green rounded hover:bg-light-border dark:hover:bg-dark-border/50"
+                                className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-primary-500 dark:hover:text-primary-400 rounded hover:bg-light-border dark:hover:bg-dark-border/50"
                               >
                                 <Edit3 size={14} />
                               </button>

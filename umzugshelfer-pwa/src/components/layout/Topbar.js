@@ -50,7 +50,7 @@ const Topbar = ({
 
   return (
     <header
-      className="sticky top-0 z-40 flex items-center gap-4 px-4 sm:px-6 h-[72px]
+      className="sticky top-0 z-40 flex items-center gap-4 pl-14 pr-4 sm:pr-6 lg:pl-6 h-[72px]
                  bg-light-surface-1/80 dark:bg-canvas-2/80 backdrop-blur-md
                  border-b border-light-border dark:border-dark-border shrink-0"
     >

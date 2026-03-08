@@ -6,7 +6,7 @@ import OpenAI from "openai";
 
 const QUELLEN = [
   { key: "objekte",  label: "Inventar", icon: Package,     farbe: "text-blue-500",   pfad: "/home/inventar" },
-  { key: "vorraete", label: "Vorräte",  icon: ShoppingCart, farbe: "text-green-500",  pfad: "/home/vorraete" },
+  { key: "vorraete", label: "Vorräte",  icon: ShoppingCart, farbe: "text-primary-500", pfad: "/home/vorraete" },
   { key: "geraete",  label: "Geräte",   icon: Wrench,       farbe: "text-orange-500", pfad: "/home/geraete" },
   { key: "aufgaben", label: "Aufgaben", icon: CheckSquare,  farbe: "text-purple-500", pfad: "/home/aufgaben" },
 ];
@@ -48,7 +48,7 @@ const Schnellsuche = ({ session }) => {
       <div className="relative mb-6">
         <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-light-text-secondary dark:text-dark-text-secondary" />
         {loading && <Loader2 size={16} className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-light-text-secondary dark:text-dark-text-secondary" />}
-        <input value={suchbegriff} onChange={(e) => handleInput(e.target.value)} placeholder="Stichwort eingeben …" className="w-full pl-10 pr-10 py-3 text-sm rounded-xl border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500 shadow-sm" autoFocus />
+        <input value={suchbegriff} onChange={(e) => handleInput(e.target.value)} placeholder="Stichwort eingeben …" className="w-full pl-10 pr-10 py-3 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500 shadow-elevation-2" autoFocus />
       </div>
 
       {suchbegriff.length >= 2 && !loading && !hatErgebnisse && (
@@ -71,7 +71,7 @@ const Schnellsuche = ({ session }) => {
                 </div>
                 <div className="space-y-1.5">
                   {items.map((item) => (
-                    <button key={item.id} onClick={() => navigate(pfad)} className="w-full flex items-center gap-3 p-3 rounded-lg bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border hover:border-green-500/50 transition-colors text-left">
+                    <button key={item.id} onClick={() => navigate(pfad)} className="w-full flex items-center gap-3 p-3 rounded-card shadow-elevation-2 bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border hover:border-primary-500/50 transition-colors text-left">
                       <Icon size={14} className={`${farbe} flex-shrink-0`} />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-light-text-main dark:text-dark-text-main truncate">{item.name || item.beschreibung}</p>
@@ -197,33 +197,33 @@ const KiAssistent = ({ session }) => {
   return (
     <div>
       {/* Eingabe */}
-      <div className="flex gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         <input
           value={frage}
           onChange={(e) => setFrage(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !loading && stelleFrage()}
           placeholder="z.B. Wo ist das HDMI-Kabel? Was brauche ich nachkaufen?"
-          className="flex-1 px-4 py-3 text-sm rounded-xl border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-purple-500 shadow-sm"
+          className="flex-1 px-4 py-3 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-purple-500 shadow-elevation-2"
           autoFocus
         />
         <button
           onClick={stelleFrage}
           disabled={!frage.trim() || loading}
-          className="px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl disabled:opacity-50 transition-colors"
+          className="px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-pill disabled:opacity-50 transition-colors"
         >
           {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
         </button>
       </div>
 
       {fehler && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+        <div className="mb-4 p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
           <AlertTriangle size={14} />{fehler}
         </div>
       )}
 
-      {/* Aktuelle Antwort */}
+      {/* Aktuelle Antwort — keep violet/purple theme */}
       {antwort && (
-        <div className="mb-6 p-4 rounded-xl bg-purple-500/10 border border-purple-500/20">
+        <div className="mb-6 p-4 rounded-card shadow-elevation-2 bg-violet-500/10 border border-violet-500/20">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={14} className="text-purple-500" />
             <span className="text-xs font-semibold text-purple-500 uppercase tracking-wider">KI-Antwort</span>
@@ -237,7 +237,7 @@ const KiAssistent = ({ session }) => {
         <div className="space-y-3">
           <p className="text-xs font-semibold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Frühere Fragen</p>
           {verlauf.slice(1).map((v, i) => (
-            <div key={i} className="p-3 rounded-xl bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border">
+            <div key={i} className="p-3 rounded-card shadow-elevation-2 bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border">
               <p className="text-xs font-medium text-light-text-main dark:text-dark-text-main mb-1">❓ {v.frage}</p>
               <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary line-clamp-2">{v.antwort}</p>
             </div>
@@ -251,7 +251,7 @@ const KiAssistent = ({ session }) => {
           <p className="text-sm">Stelle eine Frage zu deinem Haushalt</p>
           <div className="mt-4 space-y-2">
             {["Wo ist das HDMI-Kabel?", "Was muss ich nachkaufen?", "Welche Geräte brauchen bald Wartung?"].map((b) => (
-              <button key={b} onClick={() => setFrage(b)} className="block w-full text-left px-3 py-2 text-xs rounded-lg border border-light-border dark:border-dark-border hover:border-purple-500/40 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main transition-colors">
+              <button key={b} onClick={() => setFrage(b)} className="block w-full text-left px-3 py-2 text-xs rounded-card-sm border border-light-border dark:border-dark-border hover:border-purple-500/40 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main transition-colors">
                 {b}
               </button>
             ))}
@@ -268,23 +268,23 @@ const HomeGlobalSuche = ({ session }) => {
   const [modus, setModus] = useState("schnell"); // "schnell" | "ki"
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-center gap-2 mb-5">
-        <Search size={22} className="text-green-500" />
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <div className="flex items-center gap-2">
+        <Search size={22} className="text-primary-500" />
         <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Suche</h1>
       </div>
 
       {/* Modus-Tabs */}
-      <div className="flex gap-1 p-1 bg-light-border dark:bg-dark-border rounded-xl mb-5">
+      <div className="flex gap-1 p-1 bg-light-border dark:bg-dark-border rounded-card">
         <button
           onClick={() => setModus("schnell")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${modus === "schnell" ? "bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main shadow-sm" : "text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"}`}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-card-sm text-sm font-medium transition-colors ${modus === "schnell" ? "bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main shadow-elevation-2" : "text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"}`}
         >
           <Search size={14} />Schnellsuche
         </button>
         <button
           onClick={() => setModus("ki")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${modus === "ki" ? "bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main shadow-sm" : "text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"}`}
+          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-card-sm text-sm font-medium transition-colors ${modus === "ki" ? "bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main shadow-elevation-2" : "text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"}`}
         >
           <Sparkles size={14} />KI-Assistent
         </button>

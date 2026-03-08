@@ -23,25 +23,25 @@ const WissenForm = ({ initial, onSpeichern, onAbbrechen }) => {
     <div className="space-y-3">
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Titel*</label>
-        <input value={form.titel} onChange={(e) => setForm((p) => ({ ...p, titel: e.target.value }))} placeholder="z.B. Wandfarbe Wohnzimmer" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-amber-500" />
+        <input value={form.titel} onChange={(e) => setForm((p) => ({ ...p, titel: e.target.value }))} placeholder="z.B. Wandfarbe Wohnzimmer" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-amber-500" />
       </div>
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Kategorie</label>
-        <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+        <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
           {KATEGORIEN.map((k) => <option key={k}>{k}</option>)}
         </select>
       </div>
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Inhalt</label>
-        <textarea value={form.inhalt} onChange={(e) => setForm((p) => ({ ...p, inhalt: e.target.value }))} rows={5} placeholder="Alle relevanten Informationen, Maße, Codes, Notizen..." className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none resize-none" />
+        <textarea value={form.inhalt} onChange={(e) => setForm((p) => ({ ...p, inhalt: e.target.value }))} rows={5} placeholder="Alle relevanten Informationen, Maße, Codes, Notizen..." className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none resize-none" />
       </div>
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Tags (kommagetrennt)</label>
-        <input value={form.tags} onChange={(e) => setForm((p) => ({ ...p, tags: e.target.value }))} placeholder="z.B. wohnzimmer, farbe, RAL" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+        <input value={form.tags} onChange={(e) => setForm((p) => ({ ...p, tags: e.target.value }))} placeholder="z.B. wohnzimmer, farbe, RAL" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
       </div>
-      <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
-        <button onClick={handleSpeichern} disabled={!form.titel.trim()} className="flex-1 px-3 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white rounded-lg disabled:opacity-50">Speichern</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button onClick={handleSpeichern} disabled={!form.titel.trim()} className="flex-1 px-3 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white rounded-pill disabled:opacity-50">Speichern</button>
       </div>
     </div>
   );
@@ -110,30 +110,30 @@ const HomeWissen = ({ session }) => {
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-light-text-secondary dark:text-dark-text-secondary" /></div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BookOpen size={22} className="text-amber-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Wissensdatenbank</h1>
         </div>
-        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-medium">
+        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-pill text-sm font-medium">
           <Plus size={14} />Eintrag
         </button>
       </div>
 
-      {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
+      {fehler && <div className="p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
 
       {/* Suche */}
-      <div className="relative mb-4">
+      <div className="relative">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-light-text-secondary dark:text-dark-text-secondary" />
-        <input value={suchbegriff} onChange={(e) => setSuchbegriff(e.target.value)} placeholder="Titel, Inhalt oder Tags durchsuchen..." className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-amber-500" />
+        <input value={suchbegriff} onChange={(e) => setSuchbegriff(e.target.value)} placeholder="Titel, Inhalt oder Tags durchsuchen..." className="w-full pl-9 pr-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-amber-500" />
       </div>
 
       {/* Kategorie-Filter */}
-      <div className="flex gap-2 flex-wrap mb-5">
-        <button onClick={() => setKategFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!kategFilter ? "bg-amber-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => setKategFilter("")} className={`px-3 py-1.5 rounded-pill text-xs font-medium transition-colors ${!kategFilter ? "bg-amber-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
         {KATEGORIEN.map((k) => (
-          <button key={k} onClick={() => setKategFilter(k)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${kategFilter === k ? "bg-amber-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{k}</button>
+          <button key={k} onClick={() => setKategFilter(k)} className={`px-3 py-1.5 rounded-pill text-xs font-medium transition-colors ${kategFilter === k ? "bg-amber-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{k}</button>
         ))}
       </div>
 
@@ -142,7 +142,7 @@ const HomeWissen = ({ session }) => {
           <BookOpen size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">{suchbegriff || kategFilter ? "Keine Einträge gefunden" : "Noch keine Einträge"}</p>
           {!suchbegriff && !kategFilter && (
-            <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm">
+            <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-pill text-sm">
               <Plus size={14} />Ersten Eintrag anlegen
             </button>
           )}
@@ -152,7 +152,7 @@ const HomeWissen = ({ session }) => {
           {gefiltertEintraege.map((e) => (
             <div
               key={e.id}
-              className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-4 cursor-pointer hover:border-amber-500/40 transition-colors group"
+              className="bg-light-card dark:bg-canvas-2 rounded-card shadow-elevation-2 border border-light-border dark:border-dark-border p-4 cursor-pointer hover:border-amber-500/40 transition-colors group"
               onClick={() => setDetailId(e.id === detailId ? null : e.id)}
             >
               <div className="flex items-start justify-between gap-2 mb-1">
@@ -167,7 +167,7 @@ const HomeWissen = ({ session }) => {
               {(e.tags || []).length > 0 && (
                 <div className="flex gap-1 flex-wrap mt-2">
                   {e.tags.map((t) => (
-                    <span key={t} className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                    <span key={t} className="flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-pill bg-amber-500/10 text-amber-600 dark:text-amber-400">
                       <Tag size={9} />{t}
                     </span>
                   ))}
@@ -187,7 +187,7 @@ const HomeWissen = ({ session }) => {
       {/* Detail-Panel für ausgewählten Eintrag (Desktop-Sidebar) */}
       {detailEintrag && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:hidden">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl w-full border border-light-border dark:border-dark-border max-h-[85vh] flex flex-col">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-2xl shadow-2xl w-full border border-light-border dark:border-dark-border max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">{detailEintrag.titel}</h3>
               <button onClick={() => setDetailId(null)}><X size={18} className="text-light-text-secondary dark:text-dark-text-secondary" /></button>
@@ -197,7 +197,7 @@ const HomeWissen = ({ session }) => {
               <pre className="text-sm text-light-text-main dark:text-dark-text-main whitespace-pre-wrap font-sans">{detailEintrag.inhalt || "Kein Inhalt"}</pre>
               {(detailEintrag.tags || []).length > 0 && (
                 <div className="flex gap-1 flex-wrap mt-4">
-                  {detailEintrag.tags.map((t) => <span key={t} className="flex items-center gap-0.5 text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400"><Tag size={10} />{t}</span>)}
+                  {detailEintrag.tags.map((t) => <span key={t} className="flex items-center gap-0.5 text-xs px-2 py-0.5 rounded-pill bg-amber-500/10 text-amber-600 dark:text-amber-400"><Tag size={10} />{t}</span>)}
                 </div>
               )}
             </div>
@@ -208,8 +208,8 @@ const HomeWissen = ({ session }) => {
       {/* Formular-Modal */}
       {modal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-lg w-full border border-light-border dark:border-dark-border max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border sticky top-0 bg-light-card dark:bg-dark-card">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-2xl shadow-2xl max-w-lg w-full border border-light-border dark:border-dark-border max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border sticky top-0 bg-light-card dark:bg-canvas-2">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">{modal.id ? "Eintrag bearbeiten" : "Neuer Eintrag"}</h3>
               <button onClick={() => setModal(null)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
             </div>

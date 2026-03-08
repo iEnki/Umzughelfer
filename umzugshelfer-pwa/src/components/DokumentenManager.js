@@ -237,7 +237,7 @@ Antworte nur mit dem JSON.`;
 
   return (
     <div
-      className={`p-4 md:p-6 lg:p-8 min-h-screen ${
+      className={`max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4 min-h-screen ${
         theme === "dark"
           ? "bg-dark-bg text-dark-text-main"
           : "bg-light-bg text-light-text-main"
@@ -246,9 +246,9 @@ Antworte nur mit dem JSON.`;
       <h1 className="text-2xl font-bold mb-6">Meine Dokumente</h1>
       {zugehoerigeAufgabeId && (
         <p
-          className={`mb-4 p-3 rounded-md text-sm ${
+          className={`mb-4 p-3 rounded-card-sm text-sm ${
             theme === "dark"
-              ? "bg-dark-accent-blue/20 text-dark-accent-blue"
+              ? "bg-secondary-500/20 text-secondary-500"
               : "bg-light-accent-blue/20 text-light-accent-blue"
           }`}
         >
@@ -265,21 +265,21 @@ Antworte nur mit dem JSON.`;
       )}
 
       <div
-        className={`mb-8 p-6 rounded-lg shadow-md ${
+        className={`mb-8 p-6 rounded-card shadow-elevation-2 ${
           theme === "dark" ? "bg-dark-card-bg" : "bg-light-card-bg"
         }`}
       >
         <h2 className="text-xl font-semibold mb-4">Neues Dokument hochladen</h2>
         <div
           {...getRootProps()}
-          className={`p-8 border-2 border-dashed rounded-md cursor-pointer text-center transition-colors
+          className={`p-8 border-2 border-dashed rounded-card-sm cursor-pointer text-center transition-colors
           ${
             isDragActive
               ? theme === "dark"
-                ? "border-dark-accent-blue bg-dark-bg-hover"
+                ? "border-secondary-500 bg-dark-bg-hover"
                 : "border-light-accent-blue bg-light-bg-hover"
               : theme === "dark"
-              ? "border-dark-border hover:border-dark-accent-blue"
+              ? "border-dark-border hover:border-secondary-500"
               : "border-light-border hover:border-light-accent-blue"
           }
         `}
@@ -309,7 +309,7 @@ Antworte nur mit dem JSON.`;
               placeholder="Optionale Beschreibung..."
               value={beschreibung}
               onChange={(e) => setBeschreibung(e.target.value)}
-              className={`mt-2 w-full p-2 border rounded-md ${
+              className={`mt-2 w-full p-2 border rounded-card-sm ${
                 theme === "dark"
                   ? "bg-dark-input text-dark-text-main border-dark-border"
                   : "bg-light-input text-light-text-main border-light-border"
@@ -321,7 +321,7 @@ Antworte nur mit dem JSON.`;
                 placeholder="Aufgaben-ID (optional)"
                 value={zugehoerigeAufgabeId}
                 onChange={(e) => setZugehoerigeAufgabeId(e.target.value)}
-                className={`mt-2 w-full p-2 border rounded-md ${
+                className={`mt-2 w-full p-2 border rounded-card-sm ${
                   theme === "dark"
                     ? "bg-dark-input text-dark-text-main border-dark-border"
                     : "bg-light-input text-light-text-main border-light-border"
@@ -333,14 +333,14 @@ Antworte nur mit dem JSON.`;
         <button
           onClick={handleUpload}
           disabled={!selectedFile || uploading}
-          className={`mt-4 px-4 py-2 rounded-md font-semibold transition-colors ${
+          className={`mt-4 px-4 py-2 rounded-pill font-semibold transition-colors ${
             !selectedFile || uploading
               ? theme === "dark"
                 ? "bg-dark-border text-dark-text-secondary"
                 : "bg-light-border text-light-text-secondary"
               : theme === "dark"
-              ? "bg-dark-accent-green hover:bg-green-700 text-white"
-              : "bg-light-accent-green hover:bg-green-600 text-white"
+              ? "bg-primary-500 hover:bg-primary-600 text-white"
+              : "bg-primary-500 hover:bg-primary-600 text-white"
           }`}
         >
           {uploading ? "Lädt hoch..." : "Hochladen"}
@@ -350,12 +350,12 @@ Antworte nur mit dem JSON.`;
 
       {/* KI-Vorschlag Banner */}
       {(kiLaed || kiVorschlag) && (
-        <div className={`mb-6 p-4 rounded-lg border flex items-start gap-3 ${
+        <div className={`mb-6 p-4 rounded-card border flex items-start gap-3 ${
           theme === "dark"
-            ? "bg-dark-card-bg border-dark-accent-green/40"
-            : "bg-light-card-bg border-light-accent-green/40"
+            ? "bg-dark-card-bg border-primary-500/40"
+            : "bg-light-card-bg border-primary-500/40"
         }`}>
-          <Sparkles size={18} className="text-light-accent-green dark:text-dark-accent-green flex-shrink-0 mt-0.5" />
+          <Sparkles size={18} className="text-primary-500 dark:text-primary-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             {kiLaed ? (
               <p className="text-sm text-light-text-secondary dark:text-dark-text-secondary">
@@ -373,10 +373,10 @@ Antworte nur mit dem JSON.`;
             ) : null}
           </div>
           {kiVorschlag && !kiLaed && (
-            <div className="flex gap-2 flex-shrink-0">
+            <div className="flex flex-wrap gap-2 flex-shrink-0">
               <button
                 onClick={applyKiVorschlag}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-md bg-light-accent-green dark:bg-dark-accent-green text-white dark:text-dark-bg hover:opacity-90"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-card-sm bg-primary-500 hover:bg-primary-600 text-white hover:opacity-90"
                 title="Vorschlag übernehmen"
               >
                 <Check size={13} /> Übernehmen
@@ -421,7 +421,7 @@ Antworte nur mit dem JSON.`;
           {dokumente.map((doc) => (
             <div
               key={doc.id}
-              className={`p-4 rounded-lg shadow-md ${
+              className={`p-4 rounded-card shadow-elevation-2 ${
                 theme === "dark" ? "bg-dark-card-bg" : "bg-light-card-bg"
               }`}
             >
@@ -482,14 +482,14 @@ Antworte nur mit dem JSON.`;
                 Hochgeladen:{" "}
                 {new Date(doc.erstellt_am).toLocaleDateString("de-DE")}
               </p>
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() =>
                     handleDownload(doc.storage_pfad, doc.dateiname)
                   }
                   className={`p-1.5 rounded hover:opacity-80 transition-colors ${
                     theme === "dark"
-                      ? "bg-dark-accent-blue text-white"
+                      ? "bg-secondary-500 text-white"
                       : "bg-light-accent-blue text-white"
                   }`}
                   title="Herunterladen"

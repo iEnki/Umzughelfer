@@ -19,27 +19,27 @@ const BudgetForm = ({ initial, onSpeichern, onAbbrechen }) => {
     <div className="space-y-3">
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Beschreibung*</label>
-        <input value={form.beschreibung} onChange={(e) => setForm((p) => ({ ...p, beschreibung: e.target.value }))} placeholder="z.B. Supermarkt Wocheneinkauf" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500" />
+        <input value={form.beschreibung} onChange={(e) => setForm((p) => ({ ...p, beschreibung: e.target.value }))} placeholder="z.B. Supermarkt Wocheneinkauf" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500" />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Kategorie</label>
-          <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {HOME_KATEGORIEN.map((k) => <option key={k}>{k}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Betrag (€)*</label>
-          <input type="number" step="0.01" min="0" value={form.betrag} onChange={(e) => setForm((p) => ({ ...p, betrag: e.target.value }))} placeholder="0,00" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="number" step="0.01" min="0" value={form.betrag} onChange={(e) => setForm((p) => ({ ...p, betrag: e.target.value }))} placeholder="0,00" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
       </div>
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Datum</label>
-        <input type="date" value={form.datum} onChange={(e) => setForm((p) => ({ ...p, datum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+        <input type="date" value={form.datum} onChange={(e) => setForm((p) => ({ ...p, datum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
       </div>
       <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
-        <button onClick={() => form.beschreibung.trim() && form.betrag && onSpeichern(form)} disabled={!form.beschreibung.trim() || !form.betrag} className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50">Speichern</button>
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button onClick={() => form.beschreibung.trim() && form.betrag && onSpeichern(form)} disabled={!form.beschreibung.trim() || !form.betrag} className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50">Speichern</button>
       </div>
     </div>
   );
@@ -143,24 +143,24 @@ const HomeBudget = ({ session }) => {
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-light-text-secondary dark:text-dark-text-secondary" /></div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <DollarSign size={22} className="text-green-500" />
+          <DollarSign size={22} className="text-primary-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Haushaltsbudget</h1>
         </div>
-        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-medium">
           <Plus size={14} />Ausgabe
         </button>
       </div>
 
-      {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
+      {fehler && <div className="p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
 
       {/* Zeitraum-Tabs */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 flex-wrap">
         <Calendar size={15} className="text-light-text-secondary dark:text-dark-text-secondary flex-shrink-0" />
         {["monat", "jahr", "alle"].map((z) => (
-          <button key={z} onClick={() => setZeitraum(z)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${zeitraum === z ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>
+          <button key={z} onClick={() => setZeitraum(z)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${zeitraum === z ? "bg-primary-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>
             {z === "monat" ? "Monat" : z === "jahr" ? "Jahr" : "Alle"}
           </button>
         ))}
@@ -169,23 +169,23 @@ const HomeBudget = ({ session }) => {
         {zeitraum !== "alle" && (
           <div className="flex items-center gap-1 ml-auto">
             {zeitraum === "monat" && (
-              <button onClick={() => navigiereMonat(-1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+              <button onClick={() => navigiereMonat(-1)} className="p-1 rounded-card-sm hover:bg-light-border dark:hover:bg-canvas-3 text-light-text-secondary dark:text-dark-text-secondary">
                 <ChevronLeft size={14} />
               </button>
             )}
             {zeitraum === "jahr" && (
-              <button onClick={() => setSelJahr((y) => y - 1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+              <button onClick={() => setSelJahr((y) => y - 1)} className="p-1 rounded-card-sm hover:bg-light-border dark:hover:bg-canvas-3 text-light-text-secondary dark:text-dark-text-secondary">
                 <ChevronLeft size={14} />
               </button>
             )}
             <span className="text-sm font-medium text-light-text-main dark:text-dark-text-main px-2 min-w-[90px] text-center">{zeitraumLabel}</span>
             {zeitraum === "monat" && (
-              <button onClick={() => navigiereMonat(1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+              <button onClick={() => navigiereMonat(1)} className="p-1 rounded-card-sm hover:bg-light-border dark:hover:bg-canvas-3 text-light-text-secondary dark:text-dark-text-secondary">
                 <ChevronRight size={14} />
               </button>
             )}
             {zeitraum === "jahr" && (
-              <button onClick={() => setSelJahr((y) => y + 1)} className="p-1 rounded hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary">
+              <button onClick={() => setSelJahr((y) => y + 1)} className="p-1 rounded-card-sm hover:bg-light-border dark:hover:bg-canvas-3 text-light-text-secondary dark:text-dark-text-secondary">
                 <ChevronRight size={14} />
               </button>
             )}
@@ -195,13 +195,13 @@ const HomeBudget = ({ session }) => {
 
       {/* Jahres-Balkendiagramm */}
       {zeitraum === "jahr" && (
-        <div className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-4 mb-5">
+        <div className="bg-light-card dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border p-4">
           <p className="text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-3 uppercase tracking-wider">Monatsübersicht {selJahr}</p>
           <div className="flex items-end gap-1 h-20">
             {monatsSummen.map((m, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1" onClick={() => { setSelMonat(i); setZeitraum("monat"); }} style={{ cursor: "pointer" }}>
                 <div
-                  className="w-full rounded-t bg-green-500/70 hover:bg-green-500 transition-all"
+                  className="w-full rounded-t bg-primary-500/70 hover:bg-primary-500 transition-all"
                   style={{ height: `${(m.summe / maxMonatsSumme) * 100}%`, minHeight: m.summe > 0 ? "4px" : "0" }}
                   title={`${m.monat}: ${m.summe.toFixed(0)} €`}
                 />
@@ -214,9 +214,9 @@ const HomeBudget = ({ session }) => {
 
       {/* Übersicht nach Kategorie */}
       {nachKategorie.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {nachKategorie.slice(0, 4).map((k) => (
-            <div key={k.name} className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 text-center cursor-pointer hover:border-green-500/40 transition-colors" onClick={() => setKategFilter(kategFilter === k.name ? "" : k.name)}>
+            <div key={k.name} className="bg-light-card dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border p-3 text-center cursor-pointer hover:border-primary-500/50 transition-colors" onClick={() => setKategFilter(kategFilter === k.name ? "" : k.name)}>
               <div className="text-lg font-bold text-light-text-main dark:text-dark-text-main">{k.summe.toFixed(2)} €</div>
               <div className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{k.name}</div>
             </div>
@@ -225,16 +225,16 @@ const HomeBudget = ({ session }) => {
       )}
 
       {/* Gesamt */}
-      <div className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-4 mb-5 flex items-center justify-between">
+      <div className="bg-light-card dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border p-4 flex items-center justify-between">
         <span className="text-sm font-medium text-light-text-secondary dark:text-dark-text-secondary">Gesamt {kategFilter ? `(${kategFilter})` : ""} · {zeitraumLabel}</span>
         <span className="text-xl font-bold text-light-text-main dark:text-dark-text-main">{gesamt.toFixed(2)} €</span>
       </div>
 
       {/* Kategorie-Filter */}
-      <div className="flex gap-2 flex-wrap mb-4">
-        <button onClick={() => setKategFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!kategFilter ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
+      <div className="flex gap-2 flex-wrap">
+        <button onClick={() => setKategFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!kategFilter ? "bg-primary-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
         {HOME_KATEGORIEN.map((k) => (
-          <button key={k} onClick={() => setKategFilter(k)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${kategFilter === k ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{k}</button>
+          <button key={k} onClick={() => setKategFilter(k)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${kategFilter === k ? "bg-primary-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{k}</button>
         ))}
       </div>
 
@@ -247,7 +247,7 @@ const HomeBudget = ({ session }) => {
       ) : (
         <div className="space-y-2">
           {gefiltertPosten.map((p) => (
-            <div key={p.id} className="flex items-center gap-3 bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 group">
+            <div key={p.id} className="flex items-center gap-3 bg-light-card dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border p-3 group">
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-light-text-main dark:text-dark-text-main truncate">{p.beschreibung}</p>
                 <div className="flex items-center gap-2 text-xs text-light-text-secondary dark:text-dark-text-secondary">
@@ -267,7 +267,7 @@ const HomeBudget = ({ session }) => {
 
       {modal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-card shadow-elevation-3 max-w-md w-full border border-light-border dark:border-dark-border">
             <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">{modal.id ? "Ausgabe bearbeiten" : "Neue Ausgabe"}</h3>
               <button onClick={() => setModal(null)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>

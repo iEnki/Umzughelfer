@@ -13,8 +13,8 @@ const UmzugsplanerSeite = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-dark-text-main mb-6 flex items-center">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <h1 className="text-3xl font-bold text-light-text-main dark:text-dark-text-main mb-6 flex items-center">
         <PackageOpen size={30} className="mr-3 text-indigo-400" />
         Umzugsplaner (Volumen & Transport)
       </h1>
@@ -26,7 +26,7 @@ const UmzugsplanerSeite = () => {
       {/* Wir fügen eine kleine Überschrift hinzu, um den Kontext klarer zu machen, wenn das Volumen > 0 ist */}
       {calculatedVolume > 0 && (
         <div className="mt-8 pt-8 border-t border-dark-border">
-          <h2 className="text-2xl font-semibold text-dark-text-main mb-4">
+          <h2 className="text-2xl font-semibold text-light-text-main dark:text-dark-text-main mb-4">
             Basierend auf {calculatedVolume.toFixed(2)} m³ Umzugsvolumen:
           </h2>
         </div>

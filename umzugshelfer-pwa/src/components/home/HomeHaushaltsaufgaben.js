@@ -24,19 +24,19 @@ const AufgabeForm = ({ initial, onSpeichern, onAbbrechen }) => {
           value={form.beschreibung}
           onChange={(e) => setForm((p) => ({ ...p, beschreibung: e.target.value }))}
           placeholder="z.B. Kühlschrank reinigen"
-          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500"
+          className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500"
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Kategorie</label>
-          <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {KATEGORIEN.map((k) => <option key={k}>{k}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Priorität</label>
-          <select value={form.prioritaet} onChange={(e) => setForm((p) => ({ ...p, prioritaet: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.prioritaet} onChange={(e) => setForm((p) => ({ ...p, prioritaet: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {PRIORITAETEN.map((p) => <option key={p}>{p}</option>)}
           </select>
         </div>
@@ -44,21 +44,21 @@ const AufgabeForm = ({ initial, onSpeichern, onAbbrechen }) => {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Fällig am</label>
-          <input type="date" value={form.faelligkeitsdatum} onChange={(e) => setForm((p) => ({ ...p, faelligkeitsdatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="date" value={form.faelligkeitsdatum} onChange={(e) => setForm((p) => ({ ...p, faelligkeitsdatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Wiederholung</label>
-          <select value={form.wiederholung_typ} onChange={(e) => setForm((p) => ({ ...p, wiederholung_typ: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.wiederholung_typ} onChange={(e) => setForm((p) => ({ ...p, wiederholung_typ: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {WIEDERHOLUNG.map((w) => <option key={w}>{w}</option>)}
           </select>
         </div>
       </div>
       <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
         <button
           onClick={() => form.beschreibung.trim() && onSpeichern({ ...form, faelligkeitsdatum: form.faelligkeitsdatum ? `${form.faelligkeitsdatum}T12:00:00` : null })}
           disabled={!form.beschreibung.trim()}
-          className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50"
+          className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50"
         >
           Speichern
         </button>
@@ -123,7 +123,7 @@ const HomeHaushaltsaufgaben = ({ session }) => {
   const prioritaetFarbe = (p) => {
     if (p === "Hoch") return "text-red-500";
     if (p === "Mittel") return "text-amber-500";
-    return "text-green-500";
+    return "text-primary-500";
   };
 
   const heute = new Date().toISOString().split("T")[0];
@@ -140,25 +140,25 @@ const HomeHaushaltsaufgaben = ({ session }) => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CheckSquare size={22} className="text-green-500" />
+          <CheckSquare size={22} className="text-primary-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Haushaltsaufgaben</h1>
-          {offen.length > 0 && <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold">{offen.length}</span>}
+          {offen.length > 0 && <span className="px-2 py-0.5 rounded-pill bg-red-500 text-white text-xs font-bold">{offen.length}</span>}
         </div>
-        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-medium">
           <Plus size={14} />Neue Aufgabe
         </button>
       </div>
 
-      {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
+      {fehler && <div className="p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
 
       {/* Kategorie-Filter */}
-      <div className="flex gap-2 flex-wrap mb-4">
-        <button onClick={() => setKategFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!kategFilter ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
+      <div className="flex gap-2 flex-wrap">
+        <button onClick={() => setKategFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!kategFilter ? "bg-primary-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
         {KATEGORIEN.map((k) => (
-          <button key={k} onClick={() => setKategFilter(k)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${kategFilter === k ? "bg-green-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{k}</button>
+          <button key={k} onClick={() => setKategFilter(k)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${kategFilter === k ? "bg-primary-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{k}</button>
         ))}
       </div>
 
@@ -166,7 +166,7 @@ const HomeHaushaltsaufgaben = ({ session }) => {
         <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
           <CheckSquare size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">Keine Aufgaben</p>
-          <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"><Plus size={14} />Erste Aufgabe erstellen</button>
+          <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm"><Plus size={14} />Erste Aufgabe erstellen</button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -177,8 +177,8 @@ const HomeHaushaltsaufgaben = ({ session }) => {
                 {offen.map((a) => {
                   const ueberfaellig = a.faelligkeitsdatum && a.faelligkeitsdatum.split("T")[0] < heute;
                   return (
-                    <div key={a.id} className={`flex items-start gap-3 bg-light-card dark:bg-dark-card rounded-xl border p-3 group ${ueberfaellig ? "border-red-500/40" : "border-light-border dark:border-dark-border"}`}>
-                      <button onClick={() => toggleErledigt(a)} className="mt-0.5 w-5 h-5 rounded border-2 border-light-border dark:border-dark-border hover:border-green-500 flex items-center justify-center flex-shrink-0 transition-colors">
+                    <div key={a.id} className={`flex items-start gap-3 bg-light-card dark:bg-canvas-2 rounded-card-sm border p-3 group ${ueberfaellig ? "border-red-500/40" : "border-light-border dark:border-dark-border"}`}>
+                      <button onClick={() => toggleErledigt(a)} className="mt-0.5 w-5 h-5 rounded border-2 border-light-border dark:border-dark-border hover:border-primary-500 flex items-center justify-center flex-shrink-0 transition-colors">
                         <div className="w-2 h-2 rounded-sm" />
                       </button>
                       <div className="flex-1 min-w-0">
@@ -206,8 +206,8 @@ const HomeHaushaltsaufgaben = ({ session }) => {
               <h2 className="text-xs font-semibold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider mb-2">Erledigt ({erledigt.length})</h2>
               <div className="space-y-2">
                 {erledigt.slice(0, 5).map((a) => (
-                  <div key={a.id} className="flex items-center gap-3 bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 opacity-60 group">
-                    <button onClick={() => toggleErledigt(a)} className="w-5 h-5 rounded bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <div key={a.id} className="flex items-center gap-3 bg-light-card dark:bg-canvas-2 rounded-card-sm border border-light-border dark:border-dark-border p-3 opacity-60 group">
+                    <button onClick={() => toggleErledigt(a)} className="w-5 h-5 rounded bg-primary-500 flex items-center justify-center flex-shrink-0">
                       <Check size={11} className="text-white" />
                     </button>
                     <p className="flex-1 text-sm text-light-text-main dark:text-dark-text-main line-through">{a.beschreibung}</p>
@@ -222,7 +222,7 @@ const HomeHaushaltsaufgaben = ({ session }) => {
 
       {modal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-card shadow-elevation-3 max-w-md w-full border border-light-border dark:border-dark-border">
             <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">{modal.id ? "Aufgabe bearbeiten" : "Neue Aufgabe"}</h3>
               <button onClick={() => setModal(null)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>

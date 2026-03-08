@@ -955,9 +955,9 @@ const TodoListenManager = ({ session }) => {
     let bgClass;
 
     if (currentTheme === "dark") {
-      bgClass = erledigt ? "bg-dark-accent-green/20" : "bg-dark-card-bg";
+      bgClass = erledigt ? "bg-primary-600/20" : "bg-canvas-2";
       if (erledigt) {
-        borderClass += "border-dark-accent-green";
+        borderClass += "border-primary-500";
       } else {
         const heute = new Date();
         heute.setHours(0, 0, 0, 0);
@@ -986,9 +986,9 @@ const TodoListenManager = ({ session }) => {
         }
       }
     } else {
-      bgClass = erledigt ? "bg-light-accent-green/10" : "bg-white";
+      bgClass = erledigt ? "bg-primary-500/10" : "bg-white";
       if (erledigt) {
-        borderClass += "border-light-accent-green";
+        borderClass += "border-primary-500";
       } else {
         const heute = new Date();
         heute.setHours(0, 0, 0, 0);
@@ -1080,9 +1080,9 @@ const TodoListenManager = ({ session }) => {
         {Object.entries(gruppierteAufgaben).map(([kat, aufgInKat]) => (
           <div
             key={kat}
-            className={`p-4 rounded-lg shadow-md flex flex-col self-start border ${
+            className={`p-4 rounded-card shadow-elevation-2 flex flex-col self-start border ${
               theme === "dark"
-                ? "bg-dark-card-bg border-dark-border"
+                ? "bg-canvas-2 border-dark-border"
                 : "bg-light-card-bg border-light-border"
             }`}
           >
@@ -1106,7 +1106,7 @@ const TodoListenManager = ({ session }) => {
                 return (
                   <li
                     key={aufgabe.id}
-                    className={`flex items-start p-2.5 rounded-md transition-all group hover:shadow-sm ${borderClass} ${bgClass} ${
+                    className={`flex items-start p-2.5 rounded-card-sm transition-all group hover:shadow-sm ${borderClass} ${bgClass} ${
                       justAddedTaskId === aufgabe.id ? "animate-pulse-once" : ""
                     }`}
                   >
@@ -1116,9 +1116,7 @@ const TodoListenManager = ({ session }) => {
                       }
                       className={`mr-2 mt-0.5 p-0.5 rounded-full ${
                         aufgabe.erledigt
-                          ? theme === "dark"
-                            ? "text-dark-accent-green"
-                            : "text-light-accent-green"
+                          ? "text-primary-500"
                           : theme === "dark"
                           ? "text-dark-text-secondary hover:text-dark-text-main"
                           : "text-light-text-secondary hover:text-light-text-main"
@@ -1226,8 +1224,8 @@ const TodoListenManager = ({ session }) => {
                         title="Bearbeiten"
                         className={`p-1 rounded hover:bg-opacity-20 ${
                           theme === "dark"
-                            ? "text-dark-text-secondary hover:text-dark-accent-green hover:bg-dark-border/50"
-                            : "text-light-text-secondary hover:text-light-accent-green hover:bg-light-border"
+                            ? "text-dark-text-secondary hover:text-primary-400 hover:bg-dark-border/50"
+                            : "text-light-text-secondary hover:text-primary-500 hover:bg-light-border"
                         }`}
                       >
                         {" "}
@@ -1287,9 +1285,9 @@ const TodoListenManager = ({ session }) => {
         {Object.entries(gruppierteAufgaben).map(([kat, aufgInKat]) => (
           <div
             key={kat}
-            className={`p-4 rounded-lg shadow-md border ${
+            className={`p-4 rounded-card shadow-elevation-2 border ${
               theme === "dark"
-                ? "bg-dark-card-bg border-dark-border"
+                ? "bg-canvas-2 border-dark-border"
                 : "bg-light-card-bg border-light-border"
             }`}
           >
@@ -1302,7 +1300,7 @@ const TodoListenManager = ({ session }) => {
             >
               {kat} ({aufgInKat.length})
             </h4>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto -mx-4 px-4">
               <table
                 className={`min-w-full text-sm text-left ${
                   theme === "dark"
@@ -1313,7 +1311,7 @@ const TodoListenManager = ({ session }) => {
                 <thead
                   className={`text-xs uppercase ${
                     theme === "dark"
-                      ? "text-dark-text-main bg-dark-bg"
+                      ? "text-dark-text-main bg-canvas-1"
                       : "text-light-text-main bg-gray-50"
                   }`}
                 >
@@ -1341,7 +1339,7 @@ const TodoListenManager = ({ session }) => {
                       key={aufgabe.id}
                       className={`border-b hover:bg-opacity-10 ${
                         theme === "dark"
-                          ? "border-dark-border/50 hover:bg-dark-bg/30"
+                          ? "border-dark-border/50 hover:bg-canvas-1/30"
                           : "border-light-border hover:bg-gray-100"
                       } ${aufgabe.erledigt ? "opacity-60" : ""}`}
                     >
@@ -1352,9 +1350,7 @@ const TodoListenManager = ({ session }) => {
                           }
                           className={`p-0.5 rounded-full ${
                             aufgabe.erledigt
-                              ? theme === "dark"
-                                ? "text-dark-accent-green"
-                                : "text-light-accent-green"
+                              ? "text-primary-500"
                               : theme === "dark"
                               ? "text-dark-text-secondary hover:text-dark-text-main"
                               : "text-light-text-secondary hover:text-light-text-main"
@@ -1440,8 +1436,8 @@ const TodoListenManager = ({ session }) => {
                             title="Bearbeiten"
                             className={`p-1 rounded hover:bg-opacity-20 ${
                               theme === "dark"
-                                ? "text-dark-text-secondary hover:text-dark-accent-green hover:bg-dark-border/50"
-                                : "text-light-text-secondary hover:text-light-accent-green hover:bg-light-border"
+                                ? "text-dark-text-secondary hover:text-primary-400 hover:bg-dark-border/50"
+                                : "text-light-text-secondary hover:text-primary-500 hover:bg-light-border"
                             }`}
                           >
                             {" "}
@@ -1515,17 +1511,17 @@ const TodoListenManager = ({ session }) => {
     );
 
   return (
-    <div className="space-y-4 p-3 md:p-4 lg:p-5 relative pb-20">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4 relative pb-20">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
         <h2 className="text-2xl font-bold text-light-text-main dark:text-dark-text-main">
           Smarte To-Do Listen
         </h2>
-        <div className="flex items-center gap-2 self-start sm:self-center">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-center">
           <button
             onClick={() => setViewMode("kacheln")}
-            className={`p-1.5 rounded-md ${
+            className={`p-1.5 rounded-card-sm ${
               viewMode === "kacheln"
-                ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg"
+                ? "bg-primary-500 hover:bg-primary-600 text-white"
                 : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
             title="Kachelansicht"
@@ -1535,9 +1531,9 @@ const TodoListenManager = ({ session }) => {
           </button>
           <button
             onClick={() => setViewMode("liste")}
-            className={`p-1.5 rounded-md ${
+            className={`p-1.5 rounded-card-sm ${
               viewMode === "liste"
-                ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg"
+                ? "bg-primary-500 hover:bg-primary-600 text-white"
                 : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
             title="Listenansicht"
@@ -1548,7 +1544,7 @@ const TodoListenManager = ({ session }) => {
           <button
             onClick={() => { setShowVorlagenModal(true); fetchMeineVorlagen(); }}
             disabled={!userId}
-            className="flex items-center bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md transition-colors shadow-sm text-sm disabled:opacity-50"
+            className="flex items-center bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white px-3 py-1.5 rounded-pill transition-colors shadow-sm text-sm disabled:opacity-50"
             title="Meine Vorlagen verwalten"
           >
             <BookMarked size={18} className="mr-1.5" /> Vorlagen
@@ -1556,7 +1552,7 @@ const TodoListenManager = ({ session }) => {
           <button
             onClick={() => setShowKiTodoAssistent(!showKiTodoAssistent)}
             disabled={!userId}
-            className="flex items-center bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white px-3 py-1.5 rounded-md transition-colors shadow-sm text-sm disabled:opacity-50"
+            className="flex items-center bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white px-3 py-1.5 rounded-pill transition-colors shadow-sm text-sm disabled:opacity-50"
             title="To-Dos mit KI-Assistent erstellen"
           >
             {" "}
@@ -1565,7 +1561,7 @@ const TodoListenManager = ({ session }) => {
         </div>
       </div>
       {showKiTodoAssistent && userId && (
-        <div className="my-4 p-1 bg-light-card-bg dark:bg-dark-card-bg border border-light-border dark:border-dark-border rounded-lg shadow-md">
+        <div className="my-4 p-1 bg-light-card-bg dark:bg-canvas-2 border border-light-border dark:border-dark-border rounded-card shadow-elevation-2">
           {" "}
           <KiTodoAssistent
             session={session}
@@ -1575,7 +1571,7 @@ const TodoListenManager = ({ session }) => {
       )}
       {showFormModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-start py-4 px-3 z-50 overflow-y-auto">
-          <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-xl w-full max-w-md relative border border-light-border dark:border-dark-border">
+          <div className="bg-light-card-bg dark:bg-canvas-2 p-4 rounded-card shadow-elevation-3 w-full max-w-md relative border border-light-border dark:border-dark-border">
             <button
               onClick={resetForm}
               className="absolute top-2.5 right-2.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main z-10"
@@ -1601,7 +1597,7 @@ const TodoListenManager = ({ session }) => {
                     id="todoVorlage"
                     value={selectedVorlage}
                     onChange={handleVorlageChange}
-                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm shadow-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                   >
                     <option value="">-- Bitte Vorlage wählen --</option>
                     {Object.entries(gruppierteVorlagen)
@@ -1633,7 +1629,7 @@ const TodoListenManager = ({ session }) => {
                   value={beschreibung}
                   onChange={handleBeschreibungChange}
                   required
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                 />{" "}
               </div>
               <div>
@@ -1652,7 +1648,7 @@ const TodoListenManager = ({ session }) => {
                   onChange={(e) => setKategorie(e.target.value)}
                   placeholder="z.B. Behörden"
                   required
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                   list="kategorie-vorschlaege"
                 />{" "}
                 <datalist id="kategorie-vorschlaege">
@@ -1676,7 +1672,7 @@ const TodoListenManager = ({ session }) => {
                     id="todoPrioritaet"
                     value={prioritaet}
                     onChange={(e) => setPrioritaet(e.target.value)}
-                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                   >
                     {" "}
                     <option value="Hoch">Hoch</option>{" "}
@@ -1698,7 +1694,7 @@ const TodoListenManager = ({ session }) => {
                     id="todoFaelligkeit"
                     value={faelligkeitsdatum} // State speichert jetzt datetime-local String
                     onChange={(e) => setFaelligkeitsdatum(e.target.value)}
-                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                   />{" "}
                 </div>{" "}
               </div>
@@ -1716,7 +1712,7 @@ const TodoListenManager = ({ session }) => {
                   id="todoErinnerung"
                   value={erinnerungsDatum}
                   onChange={(e) => setErinnerungsDatum(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                 />{" "}
               </div>
               <div>
@@ -1733,7 +1729,7 @@ const TodoListenManager = ({ session }) => {
                   value={anhaengeText}
                   onChange={(e) => setAnhaengeText(e.target.value)}
                   rows="2"
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                 />{" "}
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1751,7 +1747,7 @@ const TodoListenManager = ({ session }) => {
                     id="todoWiederholungTyp"
                     value={wiederholungTyp}
                     onChange={(e) => setWiederholungTyp(e.target.value)}
-                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                    className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                   >
                     {" "}
                     {wiederholungOptionen.map((opt) => (
@@ -1782,7 +1778,7 @@ const TodoListenManager = ({ session }) => {
                           parseInt(e.target.value, 10) || 1
                         )
                       }
-                      className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                      className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                     />{" "}
                   </div>
                 )}{" "}
@@ -1800,7 +1796,7 @@ const TodoListenManager = ({ session }) => {
                   id="todoBudgetVerknuepfung"
                   value={budgetVerknuepfung}
                   onChange={(e) => setBudgetVerknuepfung(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-secondary-500"
                 >
                   {" "}
                   <option value="">Keine Verknüpfung</option>{" "}
@@ -1817,14 +1813,14 @@ const TodoListenManager = ({ session }) => {
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-3 py-1.5 text-xs text-light-text-secondary dark:text-dark-text-secondary bg-light-border dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                  className="px-3 py-1.5 text-xs text-light-text-secondary dark:text-dark-text-secondary bg-light-border dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-gray-700 rounded-card-sm"
                 >
                   {" "}
                   Abbrechen{" "}
                 </button>{" "}
                 <button
                   type="submit"
-                  className="px-3 py-1.5 text-xs text-white dark:text-dark-bg bg-light-accent-green dark:bg-dark-accent-green hover:opacity-90 rounded-md"
+                  className="px-3 py-1.5 text-xs text-white bg-primary-500 hover:bg-primary-600 rounded-pill"
                 >
                   {" "}
                   {editingAufgabeId ? "Speichern" : "Hinzufügen"}{" "}
@@ -1853,7 +1849,7 @@ const TodoListenManager = ({ session }) => {
       <button
         onClick={handleAddNewClick}
         title="Neue Aufgabe"
-        className="fixed bottom-4 right-4 bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg p-3 rounded-full shadow-lg hover:opacity-90 z-40"
+        className="fixed bottom-4 right-4 bg-primary-500 hover:bg-primary-600 text-white p-3 rounded-full shadow-elevation-2 z-40"
       >
         {" "}
         <PlusCircle size={24} />{" "}
@@ -1866,7 +1862,7 @@ const TodoListenManager = ({ session }) => {
       />
       {showVorlagenModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-start py-4 px-3 z-50 overflow-y-auto">
-          <div className="bg-light-card-bg dark:bg-dark-card-bg p-5 rounded-lg shadow-xl w-full max-w-md relative border border-light-border dark:border-dark-border">
+          <div className="bg-light-card-bg dark:bg-canvas-2 p-5 rounded-card shadow-elevation-3 w-full max-w-md relative border border-light-border dark:border-dark-border">
             <button
               onClick={() => setShowVorlagenModal(false)}
               className="absolute top-2.5 right-2.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"
@@ -1884,7 +1880,7 @@ const TodoListenManager = ({ session }) => {
                 value={neueVorlageBeschreibung}
                 onChange={(e) => setNeueVorlageBeschreibung(e.target.value)}
                 required
-                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
+                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
               />
               <input
                 type="text"
@@ -1893,7 +1889,7 @@ const TodoListenManager = ({ session }) => {
                 onChange={(e) => setNeueVorlageKategorie(e.target.value)}
                 required
                 list="kategorie-vorschlaege-vorlage"
-                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
+                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
               />
               <datalist id="kategorie-vorschlaege-vorlage">
                 {standardKategorien.map((kat) => <option key={kat} value={kat} />)}
@@ -1901,7 +1897,7 @@ const TodoListenManager = ({ session }) => {
               <select
                 value={neueVorlagePrioritaet}
                 onChange={(e) => setNeueVorlagePrioritaet(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
+                className="w-full px-2.5 py-1.5 border border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main"
               >
                 <option value="Hoch">Hoch</option>
                 <option value="Mittel">Mittel</option>
@@ -1909,7 +1905,7 @@ const TodoListenManager = ({ session }) => {
               </select>
               <button
                 type="submit"
-                className="w-full px-3 py-1.5 text-sm text-white dark:text-dark-bg bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-md"
+                className="w-full px-3 py-1.5 text-sm text-white dark:text-dark-bg bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-pill"
               >
                 Vorlage speichern
               </button>
@@ -1926,7 +1922,7 @@ const TodoListenManager = ({ session }) => {
                 meineVorlagen.map((v) => (
                   <div
                     key={v.id}
-                    className="flex items-center justify-between p-2.5 rounded-md bg-light-bg dark:bg-dark-bg border border-light-border dark:border-dark-border"
+                    className="flex items-center justify-between p-2.5 rounded-card-sm bg-light-bg dark:bg-canvas-1 border border-light-border dark:border-dark-border"
                   >
                     <div>
                       <p className="text-sm font-medium text-light-text-main dark:text-dark-text-main">{v.beschreibung}</p>

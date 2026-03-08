@@ -114,14 +114,17 @@ const Sidebar = ({ activeRoute, onNavigate, onLogout, appMode, onToggleMode }) =
                 key={item.path}
                 title={item.name}
                 onClick={() => handleNavigate(item.path)}
-                className={`w-12 h-12 rounded-sidebar-tile flex items-center justify-center
+                className={`w-16 h-[52px] rounded-sidebar-tile flex flex-col items-center justify-center gap-0.5
                             transition-all duration-200 shrink-0
                             ${active
                               ? "bg-canvas-4 border border-primary-500/30 shadow-sidebar-active text-primary-400"
                               : "border border-transparent text-dark-text-secondary hover:bg-canvas-3 hover:text-dark-text-main"
                             }`}
               >
-                <Icon size={20} />
+                <Icon size={17} />
+                <span className="text-[9px] font-medium leading-none text-center truncate w-full px-0.5">
+                  {item.name}
+                </span>
               </button>
             );
           })}

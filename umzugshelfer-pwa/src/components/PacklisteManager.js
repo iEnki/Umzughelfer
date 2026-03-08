@@ -2217,7 +2217,7 @@ const RaumInventar = ({ kisten }) => {
   const gesamtAusgepackt = raeume.reduce((s, r) => s + inventarNachRaum[r].length, 0);
 
   return (
-    <div className="bg-light-card-bg dark:bg-dark-card-bg rounded-lg border border-light-border dark:border-dark-border shadow-sm">
+    <div className="bg-light-card-bg dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border shadow-sm">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-4 py-3 text-left"
@@ -3033,7 +3033,7 @@ const PacklisteManager = ({ session }) => {
         <p className="text-red-500">{error}</p>
         <button
           onClick={fetchKisten}
-          className="mt-3 px-3 py-1.5 bg-dark-accent-purple text-dark-text-main rounded-md text-sm"
+          className="mt-3 px-3 py-1.5 bg-dark-accent-purple text-dark-text-main rounded-card-sm text-sm"
         >
           Erneut versuchen
         </button>
@@ -3047,7 +3047,7 @@ const PacklisteManager = ({ session }) => {
         return (
           <div
             key={kiste.id}
-            className="bg-light-card-bg dark:bg-dark-card-bg rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer flex flex-col self-start border border-light-border dark:border-dark-border/50 overflow-hidden"
+            className="bg-light-card-bg dark:bg-canvas-2 rounded-card shadow-elevation-2 hover:shadow-elevation-2 transition-shadow duration-200 cursor-pointer flex flex-col self-start border border-light-border dark:border-dark-border/50 overflow-hidden"
             onClick={() => handleOpenKisteModal(kiste)}
           >
             {/* Das img-Tag wird jetzt immer gerendert, kisteImageUrl hat immer einen Wert */}
@@ -3069,7 +3069,7 @@ const PacklisteManager = ({ session }) => {
             <div className="p-3 flex flex-col flex-grow justify-between">
               <div>
                 {kiste.raum_neu && (
-                  <span className="text-xs bg-light-accent-green/30 text-green-700 dark:bg-dark-accent-green/30 dark:text-green-300 px-1.5 py-0.5 rounded-full font-semibold mb-1 inline-block">
+                  <span className="text-xs bg-primary-500/30 text-green-700 dark:bg-primary-600/30 dark:text-green-300 px-1.5 py-0.5 rounded-full font-semibold mb-1 inline-block">
                     {kiste.raum_neu}
                   </span>
                 )}
@@ -3102,7 +3102,7 @@ const PacklisteManager = ({ session }) => {
                       setShowQrCodeSectionInModal(true);
                       setShowKisteModal(true);
                     }}
-                    className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green"
+                    className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-primary-500 dark:hover:text-primary-400"
                     title="QR-Code anzeigen"
                   >
                     <QrCode size={18} />
@@ -3112,7 +3112,7 @@ const PacklisteManager = ({ session }) => {
                       e.stopPropagation();
                       handleOpenKisteModal(kiste);
                     }}
-                    className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green"
+                    className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-primary-500 dark:hover:text-primary-400"
                     title="Bearbeiten"
                   >
                     <Edit3 size={16} />
@@ -3127,9 +3127,10 @@ const PacklisteManager = ({ session }) => {
   );
 
   const renderListenAnsicht = () => (
-    <div className="overflow-x-auto bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-md border border-light-border dark:border-dark-border">
+    <div className="bg-light-card-bg dark:bg-canvas-2 p-4 rounded-card shadow-elevation-2 border border-light-border dark:border-dark-border">
+      <div className="overflow-x-auto -mx-4 px-4">
       <table className="min-w-full text-sm text-left text-light-text-secondary dark:text-dark-text-secondary">
-        <thead className="text-xs text-light-text-main dark:text-dark-text-main uppercase bg-gray-50 dark:bg-dark-bg">
+        <thead className="text-xs text-light-text-main dark:text-dark-text-main uppercase bg-gray-50 dark:bg-canvas-1">
           <tr>
             <th scope="col" className="px-2 py-2 w-10"></th>{" "}
             {/* Spalte für Aufklapp-Button */}
@@ -3157,7 +3158,7 @@ const PacklisteManager = ({ session }) => {
 
             return (
               <React.Fragment key={kiste.id}>
-                <tr className="border-b border-light-border dark:border-dark-border/50 hover:bg-gray-100 dark:hover:bg-dark-bg/30">
+                <tr className="border-b border-light-border dark:border-dark-border/50 hover:bg-gray-100 dark:hover:bg-canvas-1/30">
                   <td className="px-2 py-2 text-center">
                     <button
                       onClick={() => toggleKisteAufklappen(kiste.id)}
@@ -3224,14 +3225,14 @@ const PacklisteManager = ({ session }) => {
                           setShowQrCodeSectionInModal(true);
                           setShowKisteModal(true);
                         }}
-                        className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green"
+                        className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-primary-500 dark:hover:text-primary-400"
                         title="QR-Code anzeigen"
                       >
                         <QrCode size={16} />
                       </button>
                       <button
                         onClick={() => handleOpenKisteModal(kiste)}
-                        className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-light-accent-green dark:hover:text-dark-accent-green"
+                        className="p-1 text-light-text-secondary dark:text-dark-text-secondary hover:text-primary-500 dark:hover:text-primary-400"
                         title="Bearbeiten"
                       >
                         <Edit3 size={16} />
@@ -3247,9 +3248,9 @@ const PacklisteManager = ({ session }) => {
                   </td>
                 </tr>
                 {isAufgeklappt && (
-                  <tr className="bg-gray-50 dark:bg-dark-bg/20 border-b border-light-border dark:border-dark-border/30">
+                  <tr className="bg-gray-50 dark:bg-canvas-1/20 border-b border-light-border dark:border-dark-border/30">
                     <td colSpan="6" className="p-0">
-                      <div className="p-3 space-y-1 bg-gray-100 dark:bg-dark-bg/30 rounded-b-md shadow-inner">
+                      <div className="p-3 space-y-1 bg-gray-100 dark:bg-canvas-1/30 rounded-b-card-sm shadow-inner">
                         {kiste.inhalt && kiste.inhalt.length > 0 ? (
                           <ul className="list-disc list-inside text-xs text-light-text-secondary dark:text-dark-text-secondary pl-4 space-y-0.5">
                             {kiste.inhalt.map((item) => (
@@ -3284,6 +3285,7 @@ const PacklisteManager = ({ session }) => {
           })}
         </tbody>
       </table>
+      </div>
       {gefilterteKisten.length === 0 && (
         <p className="text-center text-light-text-secondary dark:text-dark-text-secondary py-4">
           Keine Packstücke entsprechen den Filterkriterien.
@@ -3293,17 +3295,17 @@ const PacklisteManager = ({ session }) => {
   );
 
   return (
-    <div className="space-y-4 p-3 md:p-4 lg:p-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-3">
         <h2 className="text-2xl font-bold text-light-text-main dark:text-dark-text-main">
           Intelligente Packliste
         </h2>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setViewMode("kacheln")}
-            className={`p-1.5 rounded-md ${
+            className={`p-1.5 rounded-card-sm ${
               viewMode === "kacheln"
-                ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg"
+                ? "bg-primary-500 text-white dark:bg-primary-600 dark:text-dark-bg"
                 : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
             title="Kachelansicht"
@@ -3312,9 +3314,9 @@ const PacklisteManager = ({ session }) => {
           </button>
           <button
             onClick={() => setViewMode("liste")}
-            className={`p-1.5 rounded-md ${
+            className={`p-1.5 rounded-card-sm ${
               viewMode === "liste"
-                ? "bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg"
+                ? "bg-primary-500 text-white dark:bg-primary-600 dark:text-dark-bg"
                 : "bg-light-border text-light-text-secondary dark:bg-dark-border dark:text-dark-text-secondary hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
             title="Listenansicht"
@@ -3324,20 +3326,20 @@ const PacklisteManager = ({ session }) => {
           <button
             onClick={() => setShowScanner(true)}
             disabled={!userId}
-            className="flex items-center bg-light-accent-purple text-white dark:bg-dark-accent-purple dark:text-dark-bg px-3 py-1.5 rounded-md hover:opacity-90 transition-colors shadow-sm text-sm disabled:opacity-50"
+            className="flex items-center bg-light-accent-purple text-white dark:bg-dark-accent-purple dark:text-dark-bg px-3 py-1.5 rounded-pill hover:opacity-90 transition-colors shadow-sm text-sm disabled:opacity-50"
           >
             <ScanLine size={18} className="mr-1.5" /> QR Scannen
           </button>
           <button
             onClick={handleAddKiste}
-            className="flex items-center bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg px-3 py-1.5 rounded-md hover:opacity-90 transition-colors shadow-sm text-sm"
+            className="flex items-center bg-primary-500 hover:bg-primary-600 text-white dark:bg-primary-600 dark:text-dark-bg px-3 py-1.5 rounded-pill transition-colors shadow-sm text-sm"
           >
             <PlusCircle size={18} className="mr-1.5" /> Neues Packstück
           </button>
           <button
             onClick={() => setShowKiAssistent(!showKiAssistent)}
             disabled={!userId}
-            className="flex items-center bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white px-3 py-1.5 rounded-md transition-colors shadow-sm text-sm disabled:opacity-50"
+            className="flex items-center bg-purple-500 hover:bg-purple-600 dark:bg-purple-600 dark:hover:bg-purple-700 text-white px-3 py-1.5 rounded-pill transition-colors shadow-sm text-sm disabled:opacity-50"
             title="Packliste mit KI-Assistent füllen"
           >
             <BrainCircuit size={18} className="mr-1.5" /> KI Assistent
@@ -3346,7 +3348,7 @@ const PacklisteManager = ({ session }) => {
             <PDFDownloadLink
               document={<PacklistePDF kisten={kisten} />}
               fileName={`packliste_${new Date().toISOString().slice(0, 10)}.pdf`}
-              className="flex items-center bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-md hover:opacity-80 transition-colors shadow-sm text-sm"
+              className="flex items-center bg-light-border dark:bg-dark-border text-light-text-main dark:text-dark-text-main px-3 py-1.5 rounded-pill hover:opacity-80 transition-colors shadow-sm text-sm"
               title="Packliste als PDF herunterladen"
             >
               {({ loading: pdfLoading }) =>
@@ -3361,7 +3363,7 @@ const PacklisteManager = ({ session }) => {
         </div>
       </div>
       {showKiAssistent && userId && (
-        <div className="my-4 p-1 bg-light-card-bg dark:bg-dark-card-bg border border-light-border dark:border-dark-border rounded-lg shadow-md">
+        <div className="my-4 p-1 bg-light-card-bg dark:bg-canvas-2 border border-light-border dark:border-dark-border rounded-card shadow-elevation-2">
           <KiPacklisteAssistent
             session={session}
             onItemsExtracted={handleKiExtractedItems}
@@ -3374,7 +3376,7 @@ const PacklisteManager = ({ session }) => {
           placeholder="Suchen (Name, Kiste, Raum, QR, Kategorie)..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="w-full pl-9 pr-3 py-2 border border-light-border dark:border-dark-border rounded-md focus:ring-1 focus:ring-light-accent-green dark:focus:ring-dark-accent-green shadow-sm text-sm text-light-text-main dark:text-dark-text-main bg-white dark:bg-dark-border placeholder-light-text-secondary dark:placeholder-dark-text-secondary"
+          className="w-full pl-9 pr-3 py-2 border border-light-border dark:border-dark-border rounded-card-sm focus:ring-2 focus:ring-secondary-500 shadow-sm text-sm text-light-text-main dark:text-dark-text-main bg-white dark:bg-dark-border placeholder-light-text-secondary dark:placeholder-dark-text-secondary"
         />
         <Search
           className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-light-text-secondary dark:text-dark-text-secondary"
@@ -3384,18 +3386,18 @@ const PacklisteManager = ({ session }) => {
       {showScanner && (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex flex-col justify-center items-center p-4 z-50">
           {" "}
-          <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-xl w-full max-w-md relative border border-light-border dark:border-dark-border">
+          <div className="bg-light-card-bg dark:bg-canvas-2 p-4 rounded-card shadow-elevation-3 w-full max-w-md relative border border-light-border dark:border-dark-border">
             {" "}
             <h3 className="text-lg font-semibold text-light-text-main dark:text-dark-text-main mb-3 text-center">
               QR-Code Scanner
             </h3>{" "}
             <div
               id={qrScannerId}
-              className="w-full rounded-md overflow-hidden border border-dark-border"
+              className="w-full rounded-card-sm overflow-hidden border border-dark-border"
             ></div>{" "}
             <button
               onClick={() => setShowScanner(false)}
-              className="mt-4 w-full bg-danger-color text-white px-3 py-1.5 rounded-md hover:opacity-90 text-sm"
+              className="mt-4 w-full bg-danger-color text-white px-3 py-1.5 rounded-pill hover:opacity-90 text-sm"
             >
               {" "}
               Schließen{" "}
@@ -3418,7 +3420,7 @@ const PacklisteManager = ({ session }) => {
 
       {showKisteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex justify-center items-start py-4 px-3 z-50 overflow-y-auto">
-          <div className="bg-light-card-bg dark:bg-dark-card-bg p-4 rounded-lg shadow-xl w-full max-w-lg relative my-auto border border-light-border dark:border-dark-border">
+          <div className="bg-light-card-bg dark:bg-canvas-2 p-4 rounded-card shadow-elevation-3 w-full max-w-lg relative my-auto border border-light-border dark:border-dark-border">
             <button
               onClick={() => {
                 setShowKisteModal(false);
@@ -3457,7 +3459,7 @@ const PacklisteManager = ({ session }) => {
                   value={neueKisteName}
                   onChange={(e) => setNeueKisteName(e.target.value)}
                   required
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500 dark:focus:border-primary-500"
                 />
               </div>
               <div>
@@ -3474,7 +3476,7 @@ const PacklisteManager = ({ session }) => {
                   onChange={(e) => setNeueKisteRaum(e.target.value)}
                   placeholder="z.B. Wohnzimmer"
                   list="raumVorschlaegeDatalist"
-                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                  className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-sm bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500 dark:focus:border-primary-500"
                 />
                 <datalist id="raumVorschlaegeDatalist">
                   {raumVorschlaege.map((raum) => (
@@ -3485,7 +3487,7 @@ const PacklisteManager = ({ session }) => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="px-3 py-1.5 text-xs text-white dark:text-dark-bg bg-light-accent-green dark:bg-dark-accent-green hover:opacity-90 rounded-md"
+                  className="px-3 py-1.5 text-xs text-white dark:text-dark-bg bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 rounded-pill"
                 >
                   {aktuelleKiste?.id ? "Details speichern" : "Erstellen"}
                 </button>
@@ -3532,7 +3534,7 @@ const PacklisteManager = ({ session }) => {
                             <img
                               src={photoPreviewUrl || currentKistePhotoUrl}
                               alt="Kistenvorschau"
-                              className="max-h-40 w-auto rounded-md border border-light-border dark:border-dark-border hover:opacity-80 transition-opacity"
+                              className="max-h-40 w-auto rounded-card-sm border border-light-border dark:border-dark-border hover:opacity-80 transition-opacity"
                             />
                           </div>
                         </div>
@@ -3548,7 +3550,7 @@ const PacklisteManager = ({ session }) => {
                         <button
                           onClick={handlePhotoUpload}
                           disabled={uploadingPhoto}
-                          className="flex items-center text-xs bg-light-accent-green text-white dark:bg-dark-accent-green dark:text-dark-bg px-2.5 py-1 rounded-md hover:opacity-90 disabled:opacity-50"
+                          className="flex items-center text-xs bg-primary-500 hover:bg-primary-600 text-white dark:bg-primary-600 dark:text-dark-bg px-2.5 py-1 rounded-pill disabled:opacity-50"
                         >
                           {" "}
                           {uploadingPhoto ? (
@@ -3568,7 +3570,7 @@ const PacklisteManager = ({ session }) => {
                         <button
                           onClick={handleRemovePhoto}
                           disabled={uploadingPhoto}
-                          className="flex items-center text-xs bg-danger-color text-white px-2.5 py-1 rounded-md hover:opacity-90 disabled:opacity-50 ml-2"
+                          className="flex items-center text-xs bg-danger-color text-white px-2.5 py-1 rounded-pill hover:opacity-90 disabled:opacity-50 ml-2"
                         >
                           {" "}
                           <Trash2 size={14} className="mr-1" /> Foto entfernen{" "}
@@ -3603,7 +3605,7 @@ const PacklisteManager = ({ session }) => {
                           QR-Code für diese Kiste
                         </h4>
                         <div
-                          className="flex justify-center p-2 bg-white rounded-md inline-block"
+                          className="flex justify-center p-2 bg-white rounded-card-sm inline-block"
                           title=""
                         >
                           <QRCodeCanvas
@@ -3621,7 +3623,7 @@ const PacklisteManager = ({ session }) => {
                         </p>
                         <button
                           onClick={handleDownloadQrCode}
-                          className="mt-2 flex items-center justify-center text-xs bg-light-accent-blue dark:bg-dark-accent-blue text-white px-2.5 py-1 rounded-md hover:opacity-90 w-full sm:w-auto mx-auto"
+                          className="mt-2 flex items-center justify-center text-xs bg-light-accent-blue dark:bg-dark-accent-blue text-white px-2.5 py-1 rounded-pill hover:opacity-90 w-full sm:w-auto mx-auto"
                         >
                           <Download size={14} className="mr-1.5" />{" "}
                           Herunterladen
@@ -3663,7 +3665,7 @@ const PacklisteManager = ({ session }) => {
                         onChange={handleGegenstandBeschreibungChange}
                         placeholder="Beschreibung"
                         required
-                        className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-xs bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                        className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-xs bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500 dark:focus:border-primary-500"
                       />
                     </div>{" "}
                     <div>
@@ -3683,26 +3685,26 @@ const PacklisteManager = ({ session }) => {
                             parseInt(e.target.value, 10) || 1
                           )
                         }
-                        className="w-16 px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-xs bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                        className="w-16 px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-xs bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main focus:ring-2 focus:ring-secondary-500 focus:border-primary-500 dark:focus:border-primary-500"
                       />
                     </div>{" "}
                     <button
                       type="submit"
                       title="Hinzufügen"
-                      className="p-2 text-white dark:text-dark-bg bg-light-accent-green dark:bg-dark-accent-green hover:opacity-90 rounded-md self-end"
+                      className="p-2 text-white dark:text-dark-bg bg-primary-500 hover:bg-primary-600 dark:bg-primary-600 rounded-pill self-end"
                     >
                       <PackagePlus size={18} />
                     </button>{" "}
                   </div>{" "}
                   {!showManuelleKategorieInput && vorgeschlageneKategorie && (
                     <div
-                      className="text-xs text-light-text-secondary dark:text-dark-text-secondary mt-1 p-1.5 bg-light-border dark:bg-dark-border rounded-md flex justify-between items-center"
+                      className="text-xs text-light-text-secondary dark:text-dark-text-secondary mt-1 p-1.5 bg-light-border dark:bg-dark-border rounded-card-sm flex justify-between items-center"
                       title={`Automatisch als ${vorgeschlageneKategorie} erkannt`}
                     >
                       {" "}
                       <span>
                         Vorschlag:{" "}
-                        <span className="font-semibold text-light-accent-green dark:text-dark-accent-green">
+                        <span className="font-semibold text-primary-500">
                           {vorgeschlageneKategorie}
                         </span>
                       </span>{" "}
@@ -3733,7 +3735,7 @@ const PacklisteManager = ({ session }) => {
                         onChange={(e) => setManuelleKategorie(e.target.value)}
                         list="kategorieVorschlaege"
                         placeholder="Eigene Kategorie oder Auswahl"
-                        className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-md text-xs bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-light-accent-green dark:focus:ring-dark-accent-green focus:border-light-accent-green dark:focus:border-dark-accent-green"
+                        className="w-full px-2.5 py-1.5 border-light-border dark:border-dark-border rounded-card-sm text-xs bg-white dark:bg-dark-border text-light-text-main dark:text-dark-text-main placeholder-light-text-secondary dark:placeholder-dark-text-secondary focus:ring-2 focus:ring-secondary-500 focus:border-primary-500 dark:focus:border-primary-500"
                       />{" "}
                       <datalist id="kategorieVorschlaege">
                         {standardKategorien.map((kat) => (
@@ -3760,10 +3762,10 @@ const PacklisteManager = ({ session }) => {
                   {aktuelleKiste.inhalt?.map((item) => (
                     <li
                       key={item.id}
-                      className={`text-xs p-1.5 rounded-md flex justify-between items-center group hover:bg-gray-100 dark:hover:bg-dark-border/50 ${
+                      className={`text-xs p-1.5 rounded-card-sm flex justify-between items-center group hover:bg-gray-100 dark:hover:bg-dark-border/50 ${
                         item.ausgepakt_am
                           ? "bg-green-50 dark:bg-green-900/20 text-light-text-secondary dark:text-dark-text-secondary"
-                          : "bg-gray-50 dark:bg-dark-bg/50 text-light-text-secondary dark:text-dark-text-secondary"
+                          : "bg-gray-50 dark:bg-canvas-1/50 text-light-text-secondary dark:text-dark-text-secondary"
                       }`}
                     >
                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -3808,7 +3810,7 @@ const PacklisteManager = ({ session }) => {
                   <button
                     type="button"
                     onClick={() => handleDeleteKiste(aktuelleKiste.id)}
-                    className="px-3 py-1.5 text-xs text-white bg-danger-color hover:opacity-90 rounded-md flex items-center"
+                    className="px-3 py-1.5 text-xs text-white bg-danger-color hover:opacity-90 rounded-pill flex items-center"
                   >
                     <Trash2 size={14} className="mr-1" /> Packstück löschen
                   </button>
@@ -3824,7 +3826,7 @@ const PacklisteManager = ({ session }) => {
                   setShowPhotoSectionInModal(false);
                   setShowQrCodeSectionInModal(false);
                 }}
-                className="px-3 py-1.5 text-xs text-light-text-secondary dark:text-dark-text-secondary bg-light-border dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md"
+                className="px-3 py-1.5 text-xs text-light-text-secondary dark:text-dark-text-secondary bg-light-border dark:bg-dark-border hover:bg-gray-200 dark:hover:bg-gray-700 rounded-card-sm"
               >
                 Schließen
               </button>
@@ -3851,11 +3853,11 @@ const PacklisteManager = ({ session }) => {
             <img
               src={lightboxImageUrl}
               alt="Vergrößerte Kistenansicht"
-              className="block max-w-full max-h-[90vh] object-contain rounded-md"
+              className="block max-w-full max-h-[90vh] object-contain rounded-card-sm"
             />
             <button
               onClick={() => setShowPhotoLightbox(false)}
-              className="absolute -top-2 -right-2 bg-light-card-bg dark:bg-dark-card-bg text-light-text-main dark:text-dark-text-main rounded-full p-1 shadow-lg hover:bg-danger-color hover:text-white"
+              className="absolute -top-2 -right-2 bg-light-card-bg dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main rounded-full p-1 shadow-elevation-2 hover:bg-danger-color hover:text-white"
               title="Schließen"
             >
               <XCircle size={28} />

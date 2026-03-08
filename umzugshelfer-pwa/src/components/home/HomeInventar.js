@@ -9,7 +9,7 @@ import { QRCodeSVG } from "qrcode.react";
 
 // --- Hilfsfunktionen ---
 const STATUS_FARBEN = {
-  in_verwendung: "bg-green-500/10 text-green-600 dark:text-green-400",
+  in_verwendung: "bg-primary-500/10 text-green-600 dark:text-green-400",
   eingelagert: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
   verliehen: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   defekt: "bg-red-500/10 text-red-600 dark:text-red-400",
@@ -38,7 +38,7 @@ const OrtForm = ({ initial, onSpeichern, onAbbrechen }) => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="z.B. Meine Wohnung"
-          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500"
+          className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500"
         />
       </div>
       <div>
@@ -46,14 +46,14 @@ const OrtForm = ({ initial, onSpeichern, onAbbrechen }) => {
         <select
           value={typ}
           onChange={(e) => setTyp(e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none"
+          className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none"
         >
           {typen.map((t) => <option key={t}>{t}</option>)}
         </select>
       </div>
-      <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
-        <button onClick={() => name.trim() && onSpeichern({ name: name.trim(), typ })} className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50" disabled={!name.trim()}>Speichern</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button onClick={() => name.trim() && onSpeichern({ name: name.trim(), typ })} className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50" disabled={!name.trim()}>Speichern</button>
       </div>
     </div>
   );
@@ -73,7 +73,7 @@ const LagerortForm = ({ ortId, parentId, initial, onSpeichern, onAbbrechen }) =>
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="z.B. Regal 2"
-          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500"
+          className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500"
         />
       </div>
       <div>
@@ -81,14 +81,14 @@ const LagerortForm = ({ ortId, parentId, initial, onSpeichern, onAbbrechen }) =>
         <select
           value={typ}
           onChange={(e) => setTyp(e.target.value)}
-          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none"
+          className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none"
         >
           {typen.map((t) => <option key={t}>{t}</option>)}
         </select>
       </div>
-      <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
-        <button onClick={() => name.trim() && onSpeichern({ name: name.trim(), typ, ort_id: ortId, parent_id: parentId || null })} className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50" disabled={!name.trim()}>Speichern</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button onClick={() => name.trim() && onSpeichern({ name: name.trim(), typ, ort_id: ortId, parent_id: parentId || null })} className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50" disabled={!name.trim()}>Speichern</button>
       </div>
     </div>
   );
@@ -118,13 +118,13 @@ const ObjektForm = ({ ortId, lagerortId, initial, onSpeichern, onAbbrechen }) =>
           value={form.name}
           onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
           placeholder="z.B. HDMI-Kabel"
-          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500"
+          className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500"
         />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Status</label>
-          <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {statusOptionen.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
         </div>
@@ -135,21 +135,21 @@ const ObjektForm = ({ ortId, lagerortId, initial, onSpeichern, onAbbrechen }) =>
             min="1"
             value={form.menge}
             onChange={(e) => setForm((p) => ({ ...p, menge: Number(e.target.value) }))}
-            className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none"
+            className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none"
           />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Kategorie</label>
-          <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             <option value="">— wählen —</option>
             {kategorien.map((k) => <option key={k}>{k}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Zugriffshäufigkeit</label>
-          <select value={form.zugriffshaeufigkeit} onChange={(e) => setForm((p) => ({ ...p, zugriffshaeufigkeit: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.zugriffshaeufigkeit} onChange={(e) => setForm((p) => ({ ...p, zugriffshaeufigkeit: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {haeufigkeit.map((h) => <option key={h} value={h}>{h.charAt(0).toUpperCase() + h.slice(1)}</option>)}
           </select>
         </div>
@@ -160,11 +160,11 @@ const ObjektForm = ({ ortId, lagerortId, initial, onSpeichern, onAbbrechen }) =>
           value={form.tags}
           onChange={(e) => setForm((p) => ({ ...p, tags: e.target.value }))}
           placeholder="z.B. saisonal, Technik, zerbrechlich"
-          className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500"
+          className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500"
         />
       </div>
-      <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
         <button
           onClick={() => form.name.trim() && onSpeichern({
             ...form,
@@ -173,7 +173,7 @@ const ObjektForm = ({ ortId, lagerortId, initial, onSpeichern, onAbbrechen }) =>
             ort_id: ortId,
             lagerort_id: lagerortId || null,
           })}
-          className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50"
+          className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50"
           disabled={!form.name.trim()}
         >
           Speichern
@@ -305,15 +305,15 @@ const HomeInventar = ({ session }) => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <Package size={22} className="text-green-500" />
+          <Package size={22} className="text-primary-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Inventar</h1>
         </div>
         <button
           onClick={() => setModal({ typ: "ort", daten: null })}
-          className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-medium transition-colors"
         >
           <Plus size={15} />
           Neuer Standort
@@ -321,7 +321,7 @@ const HomeInventar = ({ session }) => {
       </div>
 
       {fehler && (
-        <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+        <div className="mb-4 p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
           <AlertCircle size={16} />
           {fehler}
         </div>
@@ -330,14 +330,14 @@ const HomeInventar = ({ session }) => {
       <div className="flex gap-5">
         {/* Sidebar: Standorte */}
         <div className="w-64 flex-shrink-0">
-          <div className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border overflow-hidden">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-card-sm border border-light-border dark:border-dark-border overflow-hidden">
             <div className="p-3 border-b border-light-border dark:border-dark-border">
               <h2 className="text-xs font-semibold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider">Standorte</h2>
             </div>
             {/* Alle anzeigen */}
             <button
               onClick={() => { setAusgewaehlterOrt(null); setAusgewaehlterLagerort(null); }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${!ausgewaehlterOrt ? "bg-green-500/10 text-green-600 dark:text-green-400 font-medium" : "text-light-text-main dark:text-dark-text-main hover:bg-light-hover dark:hover:bg-dark-hover"}`}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors ${!ausgewaehlterOrt ? "bg-primary-500/10 text-primary-500 font-medium" : "text-light-text-main dark:text-dark-text-main hover:bg-light-hover dark:hover:bg-canvas-3"}`}
             >
               <MapPin size={14} />
               Alle ({objekte.filter((o) => o.status !== "entsorgt").length})
@@ -348,7 +348,7 @@ const HomeInventar = ({ session }) => {
               const isOffen = aufgeklappt[ort.id];
               return (
                 <div key={ort.id}>
-                  <div className={`flex items-center group px-3 py-2 transition-colors ${ausgewaehlterOrt === ort.id && !ausgewaehlterLagerort ? "bg-green-500/10" : "hover:bg-light-hover dark:hover:bg-dark-hover"}`}>
+                  <div className={`flex items-center group px-3 py-2 transition-colors ${ausgewaehlterOrt === ort.id && !ausgewaehlterLagerort ? "bg-primary-500/10" : "hover:bg-light-hover dark:hover:bg-canvas-3"}`}>
                     <button
                       onClick={() => setAufgeklappt((p) => ({ ...p, [ort.id]: !isOffen }))}
                       className="mr-1 text-light-text-secondary dark:text-dark-text-secondary"
@@ -362,7 +362,7 @@ const HomeInventar = ({ session }) => {
                       {ort.name}
                     </button>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-1">
-                      <button onClick={() => setModal({ typ: "lagerort", daten: { ort_id: ort.id } })} className="p-0.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-green-500"><Plus size={12} /></button>
+                      <button onClick={() => setModal({ typ: "lagerort", daten: { ort_id: ort.id } })} className="p-0.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-primary-500"><Plus size={12} /></button>
                       <button onClick={() => setModal({ typ: "ort", daten: ort })} className="p-0.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500"><Edit2 size={12} /></button>
                       <button onClick={() => loescheOrt(ort.id)} className="p-0.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500"><Trash2 size={12} /></button>
                     </div>
@@ -371,7 +371,7 @@ const HomeInventar = ({ session }) => {
                     <button
                       key={l.id}
                       onClick={() => { setAusgewaehlterOrt(ort.id); setAusgewaehlterLagerort(l.id); }}
-                      className={`w-full flex items-center gap-2 pl-8 pr-3 py-1.5 text-sm transition-colors ${ausgewaehlterLagerort === l.id ? "bg-green-500/10 text-green-600 dark:text-green-400" : "text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-hover dark:hover:bg-dark-hover"}`}
+                      className={`w-full flex items-center gap-2 pl-8 pr-3 py-1.5 text-sm transition-colors ${ausgewaehlterLagerort === l.id ? "bg-primary-500/10 text-primary-500" : "text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-hover dark:hover:bg-canvas-3"}`}
                     >
                       <Box size={12} />
                       <span className="truncate">{l.name}</span>
@@ -383,7 +383,7 @@ const HomeInventar = ({ session }) => {
                   {isOffen && (
                     <button
                       onClick={() => setModal({ typ: "lagerort", daten: { ort_id: ort.id } })}
-                      className="w-full flex items-center gap-2 pl-8 pr-3 py-1.5 text-xs text-green-500 hover:bg-light-hover dark:hover:bg-dark-hover transition-colors"
+                      className="w-full flex items-center gap-2 pl-8 pr-3 py-1.5 text-xs text-primary-500 hover:bg-light-hover dark:hover:bg-canvas-3 transition-colors"
                     >
                       <Plus size={11} />
                       Lagerort hinzufügen
@@ -404,20 +404,20 @@ const HomeInventar = ({ session }) => {
         {/* Hauptbereich: Objekte */}
         <div className="flex-1 min-w-0">
           {/* Filter */}
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-4">
             <div className="relative flex-1">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-light-text-secondary dark:text-dark-text-secondary" />
               <input
                 value={suche}
                 onChange={(e) => setSuche(e.target.value)}
                 placeholder="Suche nach Name oder Tag..."
-                className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500"
+                className="w-full pl-8 pr-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main focus:outline-none"
+              className="px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main focus:outline-none"
             >
               <option value="">Alle Status</option>
               {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
@@ -425,7 +425,7 @@ const HomeInventar = ({ session }) => {
             {(ausgewaehlterOrt || ausgewaehlterLagerort) && (
               <button
                 onClick={() => setModal({ typ: "objekt", daten: { ort_id: ausgewaehlterOrt, lagerort_id: ausgewaehlterLagerort } })}
-                className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-colors whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-medium transition-colors whitespace-nowrap"
               >
                 <Plus size={14} />
                 Objekt
@@ -435,24 +435,24 @@ const HomeInventar = ({ session }) => {
 
           {/* Lagerort-Aktionen wenn ausgewählt */}
           {ausgewaehlterLagerort && (
-            <div className="mb-3 flex gap-2">
+            <div className="mb-3 flex flex-wrap gap-2">
               {(() => {
                 const l = lagerorte.find((x) => x.id === ausgewaehlterLagerort);
                 return l ? (
                   <>
-                    <button onClick={() => setModal({ typ: "lagerort", daten: l })} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">
+                    <button onClick={() => setModal({ typ: "lagerort", daten: l })} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">
                       <Edit2 size={11} /> Bearbeiten
                     </button>
                     {l.qr_code_wert ? (
-                      <button onClick={() => setModal({ typ: "qr", daten: { qrWert: l.qr_code_wert } })} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">
+                      <button onClick={() => setModal({ typ: "qr", daten: { qrWert: l.qr_code_wert } })} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">
                         <QrCode size={11} /> QR anzeigen
                       </button>
                     ) : (
-                      <button onClick={() => generiereQr(l.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">
+                      <button onClick={() => generiereQr(l.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">
                         <QrCode size={11} /> QR generieren
                       </button>
                     )}
-                    <button onClick={() => loescheLagerort(l.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-red-500/30 rounded-lg hover:bg-red-500/10 text-red-500">
+                    <button onClick={() => loescheLagerort(l.id)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-red-500/30 rounded-card-sm hover:bg-red-500/10 text-red-500">
                       <Trash2 size={11} /> Leerraum löschen
                     </button>
                   </>
@@ -469,7 +469,7 @@ const HomeInventar = ({ session }) => {
               {ausgewaehlterOrt && (
                 <button
                   onClick={() => setModal({ typ: "objekt", daten: { ort_id: ausgewaehlterOrt, lagerort_id: ausgewaehlterLagerort } })}
-                  className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"
+                  className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm"
                 >
                   <Plus size={14} />
                   Erstes Objekt hinzufügen
@@ -482,7 +482,7 @@ const HomeInventar = ({ session }) => {
                 const ort = orte.find((o) => o.id === obj.ort_id);
                 const lagerort = lagerorte.find((l) => l.id === obj.lagerort_id);
                 return (
-                  <div key={obj.id} className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 group">
+                  <div key={obj.id} className="bg-light-card dark:bg-canvas-2 rounded-card-sm border border-light-border dark:border-dark-border p-3 group">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-sm text-light-text-main dark:text-dark-text-main truncate">{obj.name}</h3>
@@ -526,7 +526,7 @@ const HomeInventar = ({ session }) => {
       {/* Modals */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-card shadow-elevation-3 max-w-md w-full border border-light-border dark:border-dark-border">
             <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">
                 {modal.typ === "ort" && (modal.daten?.id ? "Standort bearbeiten" : "Neuer Standort")}
@@ -548,11 +548,11 @@ const HomeInventar = ({ session }) => {
               )}
               {modal.typ === "qr" && (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="p-4 bg-white rounded-lg">
+                  <div className="p-4 bg-white rounded-card-sm">
                     <QRCodeSVG value={modal.daten.qrWert} size={160} />
                   </div>
                   <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary text-center break-all">{modal.daten.qrWert}</p>
-                  <button onClick={() => setModal(null)} className="px-4 py-2 border border-light-border dark:border-dark-border rounded-lg text-sm text-light-text-main dark:text-dark-text-main hover:bg-light-hover dark:hover:bg-dark-hover">Schließen</button>
+                  <button onClick={() => setModal(null)} className="px-4 py-2 border border-light-border dark:border-dark-border rounded-card-sm text-sm text-light-text-main dark:text-dark-text-main hover:bg-light-hover dark:hover:bg-canvas-3">Schließen</button>
                 </div>
               )}
             </div>

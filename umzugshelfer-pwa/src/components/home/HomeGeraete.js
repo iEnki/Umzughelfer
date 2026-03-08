@@ -20,45 +20,45 @@ const GeraetForm = ({ initial, onSpeichern, onAbbrechen }) => {
     <div className="space-y-3">
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Gerätebezeichnung*</label>
-        <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="z.B. Waschmaschine" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500" />
+        <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="z.B. Waschmaschine" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500" />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Hersteller</label>
-          <input value={form.hersteller} onChange={(e) => setForm((p) => ({ ...p, hersteller: e.target.value }))} placeholder="z.B. Bosch" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input value={form.hersteller} onChange={(e) => setForm((p) => ({ ...p, hersteller: e.target.value }))} placeholder="z.B. Bosch" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Modell</label>
-          <input value={form.modell} onChange={(e) => setForm((p) => ({ ...p, modell: e.target.value }))} placeholder="z.B. WAX32K42" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input value={form.modell} onChange={(e) => setForm((p) => ({ ...p, modell: e.target.value }))} placeholder="z.B. WAX32K42" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Kaufdatum</label>
-          <input type="date" value={form.kaufdatum} onChange={(e) => setForm((p) => ({ ...p, kaufdatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="date" value={form.kaufdatum} onChange={(e) => setForm((p) => ({ ...p, kaufdatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Garantie bis</label>
-          <input type="date" value={form.garantie_bis} onChange={(e) => setForm((p) => ({ ...p, garantie_bis: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="date" value={form.garantie_bis} onChange={(e) => setForm((p) => ({ ...p, garantie_bis: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Nächste Wartung</label>
-          <input type="date" value={form.naechste_wartung} onChange={(e) => setForm((p) => ({ ...p, naechste_wartung: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="date" value={form.naechste_wartung} onChange={(e) => setForm((p) => ({ ...p, naechste_wartung: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Intervall (Monate)</label>
-          <input type="number" min="1" value={form.wartungsintervall_monate} onChange={(e) => setForm((p) => ({ ...p, wartungsintervall_monate: e.target.value }))} placeholder="z.B. 12" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="number" min="1" value={form.wartungsintervall_monate} onChange={(e) => setForm((p) => ({ ...p, wartungsintervall_monate: e.target.value }))} placeholder="z.B. 12" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
       </div>
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Notizen</label>
-        <textarea value={form.notizen} onChange={(e) => setForm((p) => ({ ...p, notizen: e.target.value }))} rows={2} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none resize-none" />
+        <textarea value={form.notizen} onChange={(e) => setForm((p) => ({ ...p, notizen: e.target.value }))} rows={2} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none resize-none" />
       </div>
-      <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
-        <button onClick={() => form.name.trim() && onSpeichern(form)} disabled={!form.name.trim()} className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50">Speichern</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button onClick={() => form.name.trim() && onSpeichern(form)} disabled={!form.name.trim()} className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50">Speichern</button>
       </div>
     </div>
   );
@@ -145,24 +145,24 @@ const HomeGeraete = ({ session }) => {
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-light-text-secondary dark:text-dark-text-secondary" /></div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Wrench size={22} className="text-green-500" />
+          <Wrench size={22} className="text-primary-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Geräte & Wartung</h1>
         </div>
-        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+        <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-medium">
           <Plus size={14} />Gerät hinzufügen
         </button>
       </div>
 
-      {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
+      {fehler && <div className="p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
 
       {geraete.length === 0 ? (
         <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
           <Wrench size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">Noch keine Geräte erfasst</p>
-          <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"><Plus size={14} />Erstes Gerät hinzufügen</button>
+          <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm"><Plus size={14} />Erstes Gerät hinzufügen</button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -176,7 +176,7 @@ const HomeGeraete = ({ session }) => {
             const verknuepfteDoks = dokumente.filter((d) => verknuepftIds.includes(d.id));
 
             return (
-              <div key={g.id} className={`bg-light-card dark:bg-dark-card rounded-xl border ${wartungFaellig ? "border-orange-500/40" : "border-light-border dark:border-dark-border"}`}>
+              <div key={g.id} className={`bg-light-card dark:bg-canvas-2 rounded-card border ${wartungFaellig ? "border-accent-warm/40" : "border-light-border dark:border-dark-border"}`}>
                 <div className="flex items-center gap-3 p-4">
                   <button onClick={() => setAusgeklappt((p) => ({ ...p, [g.id]: !isOffen }))} className="text-light-text-secondary dark:text-dark-text-secondary">
                     {isOffen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -185,8 +185,8 @@ const HomeGeraete = ({ session }) => {
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-medium text-sm text-light-text-main dark:text-dark-text-main">{g.name}</h3>
                       {g.hersteller && <span className="text-xs text-light-text-secondary dark:text-dark-text-secondary">{g.hersteller}</span>}
-                      {wartungFaellig && <span className="flex items-center gap-0.5 text-xs text-orange-500"><AlertTriangle size={11} />Wartung fällig</span>}
-                      {garantieAbgelaufen && <span className="text-xs text-gray-400">Garantie abgelaufen</span>}
+                      {wartungFaellig && <span className="flex items-center gap-0.5 text-xs text-orange-500 rounded-pill"><AlertTriangle size={11} />Wartung fällig</span>}
+                      {garantieAbgelaufen && <span className="text-xs text-gray-400 rounded-pill">Garantie abgelaufen</span>}
                       {verknuepftIds.length > 0 && (
                         <span className="flex items-center gap-0.5 text-xs text-blue-500"><FileText size={11} />{verknuepftIds.length}</span>
                       )}
@@ -196,9 +196,9 @@ const HomeGeraete = ({ session }) => {
                       {g.garantie_bis && !garantieAbgelaufen && <span className="ml-3">Garantie bis: {g.garantie_bis}</span>}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {wartungFaellig && (
-                      <button onClick={() => wartungErledigt(g.id)} className="px-2 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded-lg">Erledigt</button>
+                      <button onClick={() => wartungErledigt(g.id)} className="px-2 py-1 text-xs bg-primary-500 hover:bg-primary-600 text-white rounded-pill">Erledigt</button>
                     )}
                     <button onClick={() => setModal(g)} className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-blue-500"><Edit2 size={13} /></button>
                     <button onClick={() => loesche(g.id)} className="p-1.5 text-light-text-secondary dark:text-dark-text-secondary hover:text-red-500"><Trash2 size={13} /></button>
@@ -211,7 +211,7 @@ const HomeGeraete = ({ session }) => {
                     <div className="flex border-b border-light-border dark:border-dark-border">
                       <button
                         onClick={() => setAktivTab((p) => ({ ...p, [g.id]: "wartung" }))}
-                        className={`px-4 py-2 text-xs font-medium transition-colors ${tab === "wartung" ? "border-b-2 border-green-500 text-green-500" : "text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"}`}
+                        className={`px-4 py-2 text-xs font-medium transition-colors ${tab === "wartung" ? "border-b-2 border-primary-500 text-primary-500" : "text-light-text-secondary dark:text-dark-text-secondary hover:text-light-text-main dark:hover:text-dark-text-main"}`}
                       >
                         Wartungsprotokoll ({geraetWartungen.length})
                       </button>
@@ -280,8 +280,8 @@ const HomeGeraete = ({ session }) => {
       {/* Gerät-Formular-Modal */}
       {modal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border sticky top-0 bg-light-card dark:bg-dark-card">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-card shadow-elevation-3 max-w-md w-full border border-light-border dark:border-dark-border max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border sticky top-0 bg-light-card dark:bg-canvas-2">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">{modal.id ? "Gerät bearbeiten" : "Neues Gerät"}</h3>
               <button onClick={() => setModal(null)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
             </div>
@@ -295,7 +295,7 @@ const HomeGeraete = ({ session }) => {
       {/* Dokumenten-Picker-Modal */}
       {dokuModal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-sm w-full border border-light-border dark:border-dark-border max-h-[80vh] flex flex-col">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-card shadow-elevation-3 max-w-sm w-full border border-light-border dark:border-dark-border max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
               <h3 className="font-semibold text-sm text-light-text-main dark:text-dark-text-main">Dokument verknüpfen</h3>
               <button onClick={() => setDokuModal(null)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
@@ -312,7 +312,7 @@ const HomeGeraete = ({ session }) => {
                       <button
                         key={d.id}
                         onClick={() => toggleDokumentLink(dokuModal, d.id)}
-                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${isLinked ? "bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400" : "hover:bg-light-border dark:hover:bg-dark-border text-light-text-main dark:text-dark-text-main"}`}
+                        className={`w-full flex items-center gap-2 px-3 py-2 rounded-card-sm text-sm transition-colors ${isLinked ? "bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400" : "hover:bg-light-border dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main"}`}
                       >
                         <FileText size={14} className={isLinked ? "text-blue-500" : "text-light-text-secondary dark:text-dark-text-secondary"} />
                         <span className="flex-1 text-left truncate">{d.dateiname}</span>
@@ -325,7 +325,7 @@ const HomeGeraete = ({ session }) => {
               )}
             </div>
             <div className="p-3 border-t border-light-border dark:border-dark-border">
-              <button onClick={() => setDokuModal(null)} className="w-full px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg">Fertig</button>
+              <button onClick={() => setDokuModal(null)} className="w-full px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill">Fertig</button>
             </div>
           </div>
         </div>

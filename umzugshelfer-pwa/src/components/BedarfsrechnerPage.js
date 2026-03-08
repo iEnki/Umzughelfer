@@ -23,10 +23,10 @@ const BedarfsrechnerPage = ({ session }) => {
       id: "farbe",
       name: "Wandfarbe",
       Icon: PaintBucket,
-      lightColor: "text-light-accent-green",
-      darkColor: "text-dark-accent-green",
+      lightColor: "text-primary-500",
+      darkColor: "text-primary-400",
       lightBgActive: "bg-green-100", // Beispiel für aktiven hellen Hintergrund
-      darkBgActive: "bg-dark-bg",
+      darkBgActive: "bg-canvas-1",
     },
     {
       id: "boden",
@@ -35,7 +35,7 @@ const BedarfsrechnerPage = ({ session }) => {
       lightColor: "text-light-accent-purple",
       darkColor: "text-dark-accent-purple",
       lightBgActive: "bg-purple-100",
-      darkBgActive: "bg-dark-bg",
+      darkBgActive: "bg-canvas-1",
     },
     {
       id: "tapete",
@@ -44,7 +44,7 @@ const BedarfsrechnerPage = ({ session }) => {
       lightColor: "text-blue-600", // Helleres Blau für Light Mode
       darkColor: "text-blue-400",
       lightBgActive: "bg-blue-100",
-      darkBgActive: "bg-dark-bg",
+      darkBgActive: "bg-canvas-1",
     },
     {
       id: "daemmstoff",
@@ -53,7 +53,7 @@ const BedarfsrechnerPage = ({ session }) => {
       lightColor: "text-sky-600",
       darkColor: "text-sky-400",
       lightBgActive: "bg-sky-100",
-      darkBgActive: "bg-dark-bg",
+      darkBgActive: "bg-canvas-1",
     },
     {
       id: "szenarien",
@@ -62,7 +62,7 @@ const BedarfsrechnerPage = ({ session }) => {
       lightColor: "text-amber-600",
       darkColor: "text-amber-400",
       lightBgActive: "bg-amber-100",
-      darkBgActive: "bg-dark-bg",
+      darkBgActive: "bg-canvas-1",
     },
   ];
 
@@ -84,16 +84,16 @@ const BedarfsrechnerPage = ({ session }) => {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
       <div className="flex flex-col items-center sm:flex-row sm:justify-between sm:items-center mb-6">
         <h1 className="text-3xl font-bold text-light-text-main dark:text-dark-text-main flex items-center mb-3 sm:mb-0">
           <Calculator
             size={30}
-            className="mr-3 text-light-accent-green dark:text-dark-accent-green"
+            className="mr-3 text-primary-500 dark:text-primary-400"
           />
           Bedarfsrechner (Material)
         </h1>
-        <div className="flex flex-wrap gap-2 border border-light-border dark:border-dark-border p-1 rounded-lg justify-center">
+        <div className="flex flex-wrap gap-2 border border-light-border dark:border-dark-border p-1 rounded-card justify-center">
           {calculatorTypes.map((calc) => {
             const isActive = activeCalculator === calc.id;
             const textColor =
@@ -105,7 +105,7 @@ const BedarfsrechnerPage = ({ session }) => {
               <button
                 key={calc.id}
                 onClick={() => setActiveCalculator(calc.id)}
-                className={`flex items-center px-3 py-1.5 rounded-md text-sm font-medium transition-all
+                className={`flex items-center px-3 py-1.5 rounded-card-sm text-sm font-medium transition-all
                   ${
                     isActive
                       ? `${textColor} ${activeBg} shadow-sm`

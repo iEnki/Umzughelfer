@@ -1235,7 +1235,7 @@ Generiere nun das Umzugstagebuch:`;
   `;
 
   return (
-    <div className="p-4 md:p-6 lg:p-8 bg-light-bg dark:bg-dark-bg min-h-screen">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4 bg-light-bg dark:bg-canvas-1 min-h-screen">
       <style>{timelineGlobalStyles}</style>
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-light-text-main dark:text-dark-text-main flex items-center">
@@ -1253,7 +1253,7 @@ Generiere nun das Umzugstagebuch:`;
           <button
             onClick={handleGenerateTagebuch}
             disabled={tagebuchLoading || !isApiKeySetForZeitstrahl}
-            className={`px-4 py-2 text-sm font-semibold rounded-md flex items-center transition-colors
+            className={`px-4 py-2 text-sm font-semibold rounded-pill flex items-center transition-colors
               ${
                 tagebuchLoading || !isApiKeySetForZeitstrahl
                   ? theme === "dark"
@@ -1289,7 +1289,7 @@ Generiere nun das Umzugstagebuch:`;
               setApiKeyInput(currentApiKey); // Input mit aktuellem Key vorbefüllen
               setShowApiKeyModal(true);
             }}
-            className={`px-4 py-2 text-sm font-semibold rounded-md flex items-center transition-colors ${
+            className={`px-4 py-2 text-sm font-semibold rounded-pill flex items-center transition-colors ${
               theme === "dark"
                 ? "bg-gray-600 hover:bg-gray-700 text-white"
                 : "bg-gray-200 hover:bg-gray-300 text-gray-800"
@@ -1313,7 +1313,7 @@ Generiere nun das Umzugstagebuch:`;
                   />
                 }
                 fileName="Umzugstagebuch.pdf"
-                className={`mt-2 inline-block px-4 py-2 text-sm font-semibold rounded-md ${
+                className={`mt-2 inline-block px-4 py-2 text-sm font-semibold rounded-pill ${
                   theme === "dark"
                     ? "bg-green-600 hover:bg-green-700 text-white"
                     : "bg-green-500 hover:bg-green-600 text-white"
@@ -1356,7 +1356,7 @@ Generiere nun das Umzugstagebuch:`;
         </div>
       </header>
       {angezeigteTimelineElemente.length === 0 && !loading && (
-        <div className="text-center py-10 bg-light-card-bg dark:bg-dark-card-bg p-6 rounded-lg shadow">
+        <div className="text-center py-10 bg-light-card-bg dark:bg-canvas-2 p-6 rounded-card shadow-elevation-2">
           <p className="text-light-text-secondary dark:text-dark-text-secondary">
             Noch keine Ereignisse vorhanden. Füge Aufgaben, Budgetposten,
             Teilzahlungen, Kisten, Dokumente oder Kontakte hinzu.
@@ -1397,9 +1397,9 @@ Generiere nun das Umzugstagebuch:`;
       {showApiKeyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
           <div
-            className={`p-6 rounded-lg shadow-xl w-full max-w-md relative border ${
+            className={`p-6 rounded-card shadow-elevation-3 w-full max-w-md relative border ${
               theme === "dark"
-                ? "bg-dark-card-bg border-dark-border"
+                ? "dark:bg-canvas-2 border-dark-border"
                 : "bg-light-card-bg border-light-border"
             }`}
           >
@@ -1443,10 +1443,10 @@ Generiere nun das Umzugstagebuch:`;
                     if (apiKeyError) setApiKeyError("");
                   }}
                   placeholder="sk-..."
-                  className={`w-full px-3 py-2 border rounded-md text-sm shadow-sm ${
+                  className={`w-full px-3 py-2 border rounded-card-sm text-sm shadow-sm focus:ring-2 focus:ring-secondary-500 ${
                     theme === "dark"
-                      ? "bg-dark-input border-dark-border text-dark-text-main focus:ring-dark-accent-green focus:border-dark-accent-green"
-                      : "bg-white border-light-border text-light-text-main focus:ring-light-accent-green focus:border-light-accent-green"
+                      ? "bg-dark-input border-dark-border text-dark-text-main focus:border-secondary-500"
+                      : "bg-white border-light-border text-light-text-main focus:border-secondary-500"
                   }`}
                 />
                 {apiKeyError && (
@@ -1478,14 +1478,12 @@ Generiere nun das Umzugstagebuch:`;
               <button
                 onClick={handleSaveApiKey}
                 disabled={apiKeyLoading}
-                className={`w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white dark:text-dark-bg transition-colors ${
+                className={`w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-card-sm shadow-sm text-sm font-medium text-white dark:text-dark-bg transition-colors ${
                   apiKeyLoading
                     ? theme === "dark"
                       ? "bg-gray-500"
                       : "bg-gray-400"
-                    : theme === "dark"
-                    ? "bg-dark-accent-green hover:opacity-90"
-                    : "bg-light-accent-green hover:opacity-90"
+                    : "bg-primary-500 hover:bg-primary-600"
                 }`}
               >
                 {apiKeyLoading ? (
@@ -1525,7 +1523,7 @@ Generiere nun das Umzugstagebuch:`;
       )}
       {apiKeyToastMessage.text && (
         <div
-          className={`fixed top-5 right-5 p-3 rounded-md shadow-lg text-sm z-[100] ${
+          className={`fixed top-5 right-5 p-3 rounded-card-sm shadow-elevation-2 text-sm z-[100] ${
             apiKeyToastMessage.type === "success"
               ? "bg-green-500 text-white"
               : apiKeyToastMessage.type === "error"

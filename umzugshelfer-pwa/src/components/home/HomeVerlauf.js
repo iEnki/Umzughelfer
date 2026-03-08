@@ -4,7 +4,7 @@ import { supabase } from "../../supabaseClient";
 
 const TABELLEN_META = {
   home_objekte:     { label: "Inventar",       icon: Package,     farbe: "text-blue-500",   bg: "bg-blue-500/10" },
-  home_vorraete:    { label: "Vorräte",         icon: ShoppingCart,farbe: "text-green-500",  bg: "bg-green-500/10" },
+  home_vorraete:    { label: "Vorräte",         icon: ShoppingCart,farbe: "text-primary-500", bg: "bg-primary-500/10" },
   home_geraete:     { label: "Geräte",          icon: Wrench,      farbe: "text-orange-500", bg: "bg-orange-500/10" },
   todo_aufgaben:    { label: "Aufgaben",         icon: CheckSquare, farbe: "text-purple-500", bg: "bg-purple-500/10" },
   home_projekte:    { label: "Projekte",         icon: FolderOpen,  farbe: "text-pink-500",   bg: "bg-pink-500/10" },
@@ -57,22 +57,22 @@ const HomeVerlauf = ({ session }) => {
   const datumKeys = Object.keys(gruppen);
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <History size={22} className="text-indigo-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Verlauf</h1>
         </div>
-        <button onClick={ladeDaten} className="p-2 rounded-lg hover:bg-light-border dark:hover:bg-dark-border text-light-text-secondary dark:text-dark-text-secondary transition-colors" title="Aktualisieren">
+        <button onClick={ladeDaten} className="p-2 rounded-card-sm hover:bg-light-border dark:hover:bg-canvas-3 text-light-text-secondary dark:text-dark-text-secondary transition-colors" title="Aktualisieren">
           <RefreshCw size={15} />
         </button>
       </div>
 
       {/* Filter nach Bereich */}
-      <div className="flex gap-2 flex-wrap mb-5">
-        <button onClick={() => setTabelleFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!tabelleFilter ? "bg-indigo-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => setTabelleFilter("")} className={`px-3 py-1.5 rounded-pill text-xs font-medium transition-colors ${!tabelleFilter ? "bg-indigo-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
         {Object.entries(TABELLEN_META).map(([key, meta]) => (
-          <button key={key} onClick={() => setTabelleFilter(key)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${tabelleFilter === key ? "bg-indigo-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{meta.label}</button>
+          <button key={key} onClick={() => setTabelleFilter(key)} className={`px-3 py-1.5 rounded-pill text-xs font-medium transition-colors ${tabelleFilter === key ? "bg-indigo-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{meta.label}</button>
         ))}
       </div>
 
@@ -102,8 +102,8 @@ const HomeVerlauf = ({ session }) => {
               const uhrzeit = new Date(e.created_at).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
 
               return (
-                <div key={e.id} className="flex items-center gap-3 p-3 bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border">
-                  <div className={`p-2 rounded-lg ${tabMeta.bg} flex-shrink-0`}>
+                <div key={e.id} className="flex items-center gap-3 p-3 bg-light-card dark:bg-canvas-2 rounded-card-sm border border-light-border dark:border-dark-border shadow-elevation-2">
+                  <div className={`p-2 rounded-card-sm ${tabMeta.bg} flex-shrink-0`}>
                     <TabIcon size={14} className={tabMeta.farbe} />
                   </div>
                   <div className="flex-1 min-w-0">

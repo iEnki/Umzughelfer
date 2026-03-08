@@ -70,7 +70,7 @@ const HomeEinkaufliste = ({ session }) => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
           <ShoppingCart size={22} className="text-amber-500" />
@@ -79,25 +79,25 @@ const HomeEinkaufliste = ({ session }) => {
             <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-xs font-bold">{offen.length}</span>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {erledigt.length > 0 && (
-            <button onClick={loescheErledigt} className="px-3 py-2 text-xs border border-light-border dark:border-dark-border rounded-lg text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-hover dark:hover:bg-dark-hover">
+            <button onClick={loescheErledigt} className="px-3 py-2 text-xs border border-light-border dark:border-dark-border rounded-card-sm text-light-text-secondary dark:text-dark-text-secondary hover:bg-light-hover dark:hover:bg-canvas-3">
               Erledigte löschen
             </button>
           )}
-          <button onClick={() => setModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+          <button onClick={() => setModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-medium">
             <Plus size={14} />Hinzufügen
           </button>
         </div>
       </div>
 
-      {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
+      {fehler && <div className="mb-4 p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
 
       {eintraege.length === 0 ? (
         <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
           <ShoppingCart size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">Einkaufsliste ist leer</p>
-          <button onClick={() => setModal(true)} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm">
+          <button onClick={() => setModal(true)} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm">
             <Plus size={14} />Ersten Eintrag hinzufügen
           </button>
         </div>
@@ -108,8 +108,8 @@ const HomeEinkaufliste = ({ session }) => {
               <h2 className="text-xs font-semibold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider mb-2">Offen ({offen.length})</h2>
               <div className="space-y-2">
                 {offen.map((e) => (
-                  <div key={e.id} className="flex items-center gap-3 bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 group">
-                    <button onClick={() => toggleErledigt(e)} className="w-5 h-5 rounded-full border-2 border-light-border dark:border-dark-border flex items-center justify-center hover:border-green-500 transition-colors flex-shrink-0">
+                  <div key={e.id} className="flex items-center gap-3 bg-light-card dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border p-3 group">
+                    <button onClick={() => toggleErledigt(e)} className="w-5 h-5 rounded-full border-2 border-light-border dark:border-dark-border flex items-center justify-center hover:border-primary-500/50 transition-colors flex-shrink-0">
                       <Circle size={12} className="text-light-text-secondary dark:text-dark-text-secondary" />
                     </button>
                     <div className="flex-1">
@@ -129,8 +129,8 @@ const HomeEinkaufliste = ({ session }) => {
               <h2 className="text-xs font-semibold text-light-text-secondary dark:text-dark-text-secondary uppercase tracking-wider mb-2">Erledigt ({erledigt.length})</h2>
               <div className="space-y-2">
                 {erledigt.map((e) => (
-                  <div key={e.id} className="flex items-center gap-3 bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border p-3 opacity-60 group">
-                    <button onClick={() => toggleErledigt(e)} className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <div key={e.id} className="flex items-center gap-3 bg-light-card dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border p-3 opacity-60 group">
+                    <button onClick={() => toggleErledigt(e)} className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
                       <Check size={11} className="text-white" />
                     </button>
                     <div className="flex-1">
@@ -149,7 +149,7 @@ const HomeEinkaufliste = ({ session }) => {
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-card shadow-elevation-3 max-w-md w-full border border-light-border dark:border-dark-border">
             <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">Eintrag hinzufügen</h3>
               <button onClick={() => setModal(false)} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
@@ -157,29 +157,29 @@ const HomeEinkaufliste = ({ session }) => {
             <div className="p-4 space-y-3">
               <div>
                 <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Artikel*</label>
-                <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} onKeyDown={(e) => e.key === "Enter" && hinzufuegen()} placeholder="z.B. Waschmittel" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500" autoFocus />
+                <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} onKeyDown={(e) => e.key === "Enter" && hinzufuegen()} placeholder="z.B. Waschmittel" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:ring-2 focus:ring-secondary-500" autoFocus />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Menge</label>
-                  <input type="number" min="0.5" step="0.5" value={form.menge} onChange={(e) => setForm((p) => ({ ...p, menge: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+                  <input type="number" min="0.5" step="0.5" value={form.menge} onChange={(e) => setForm((p) => ({ ...p, menge: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Einheit</label>
-                  <select value={form.einheit} onChange={(e) => setForm((p) => ({ ...p, einheit: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+                  <select value={form.einheit} onChange={(e) => setForm((p) => ({ ...p, einheit: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
                     {EINHEITEN.map((e) => <option key={e}>{e}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Kategorie</label>
-                  <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+                  <select value={form.kategorie} onChange={(e) => setForm((p) => ({ ...p, kategorie: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
                     {KATEGORIEN.map((k) => <option key={k}>{k}</option>)}
                   </select>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => setModal(false)} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
-                <button onClick={hinzufuegen} disabled={!form.name.trim()} className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50">Hinzufügen</button>
+              <div className="flex flex-wrap gap-2">
+                <button onClick={() => setModal(false)} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+                <button onClick={hinzufuegen} disabled={!form.name.trim()} className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50">Hinzufügen</button>
               </div>
             </div>
           </div>

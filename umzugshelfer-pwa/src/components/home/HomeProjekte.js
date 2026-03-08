@@ -9,8 +9,8 @@ const TYPEN = ["Reorganisation", "Reparatur", "Saisonwechsel", "Renovierung", "D
 const SAISON_TEMPLATES = {
   Frühling: {
     icon: Leaf,
-    farbe: "text-green-500",
-    bg: "bg-green-500/10",
+    farbe: "text-primary-500",
+    bg: "bg-primary-500/10",
     name: "Frühjahrsputz & Neustart",
     beschreibung: "Frühjahrsputz, Garten vorbereiten und Winterkram einräumen.",
     aufgaben: [
@@ -73,7 +73,7 @@ const SAISON_TEMPLATES = {
 
 const SaisonWahlModal = ({ onWaehle, onAbbrechen }) => (
   <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-sm w-full border border-light-border dark:border-dark-border">
+    <div className="bg-light-card dark:bg-canvas-2 rounded-2xl shadow-2xl max-w-sm w-full border border-light-border dark:border-dark-border">
       <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
         <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">Jahreszeiten-Template</h3>
         <button onClick={onAbbrechen} className="p-1 text-light-text-secondary dark:text-dark-text-secondary"><X size={18} /></button>
@@ -85,17 +85,17 @@ const SaisonWahlModal = ({ onWaehle, onAbbrechen }) => (
             <button
               key={saison}
               onClick={() => onWaehle(saison)}
-              className={`flex flex-col items-center gap-2 p-4 rounded-xl border border-light-border dark:border-dark-border hover:border-current transition-colors ${meta.bg}`}
+              className={`flex flex-col items-center gap-2 p-4 rounded-card-sm border border-light-border dark:border-dark-border hover:border-current transition-colors ${meta.bg}`}
             >
               <Icon size={28} className={meta.farbe} />
-              <span className={`text-sm font-medium ${meta.farbe}`}>{saison}</span>
+              <span className={`text-sm font-medium rounded-pill ${meta.farbe}`}>{saison}</span>
               <span className="text-[10px] text-light-text-secondary dark:text-dark-text-secondary text-center">{meta.aufgaben.length} Aufgaben</span>
             </button>
           );
         })}
       </div>
       <div className="px-4 pb-4">
-        <button onClick={onAbbrechen} className="w-full px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Ohne Template fortfahren</button>
+        <button onClick={onAbbrechen} className="w-full px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Ohne Template fortfahren</button>
       </div>
     </div>
   </div>
@@ -119,43 +119,43 @@ const ProjektForm = ({ initial, onSpeichern, onAbbrechen }) => {
     <div className="space-y-3">
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Projektname*</label>
-        <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="z.B. Keller aufräumen" className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-green-500" />
+        <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="z.B. Keller aufräumen" className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-primary-500" />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Typ</label>
-          <select value={form.typ} onChange={(e) => setForm((p) => ({ ...p, typ: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.typ} onChange={(e) => setForm((p) => ({ ...p, typ: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {TYPEN.map((t) => <option key={t}>{t}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Status</label>
-          <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none">
+          <select value={form.status} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none">
             {STATUS_OPTIONEN.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
           </select>
         </div>
       </div>
       <div>
         <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Beschreibung</label>
-        <textarea value={form.beschreibung} onChange={(e) => setForm((p) => ({ ...p, beschreibung: e.target.value }))} rows={2} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none resize-none" />
+        <textarea value={form.beschreibung} onChange={(e) => setForm((p) => ({ ...p, beschreibung: e.target.value }))} rows={2} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none resize-none" />
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Start</label>
-          <input type="date" value={form.startdatum} onChange={(e) => setForm((p) => ({ ...p, startdatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="date" value={form.startdatum} onChange={(e) => setForm((p) => ({ ...p, startdatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Zieldatum</label>
-          <input type="date" value={form.zieldatum} onChange={(e) => setForm((p) => ({ ...p, zieldatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="date" value={form.zieldatum} onChange={(e) => setForm((p) => ({ ...p, zieldatum: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
         <div>
           <label className="block text-xs font-medium text-light-text-secondary dark:text-dark-text-secondary mb-1">Budget (€)</label>
-          <input type="number" min="0" step="0.01" value={form.budget} onChange={(e) => setForm((p) => ({ ...p, budget: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-lg border border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg text-light-text-main dark:text-dark-text-main focus:outline-none" />
+          <input type="number" min="0" step="0.01" value={form.budget} onChange={(e) => setForm((p) => ({ ...p, budget: e.target.value }))} className="w-full px-3 py-2 text-sm rounded-card-sm border border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 text-light-text-main dark:text-dark-text-main focus:outline-none" />
         </div>
       </div>
-      <div className="flex gap-2">
-        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-lg hover:bg-light-hover dark:hover:bg-dark-hover text-light-text-main dark:text-dark-text-main">Abbrechen</button>
-        <button onClick={() => form.name.trim() && onSpeichern(form)} disabled={!form.name.trim()} className="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50">Speichern</button>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={onAbbrechen} className="flex-1 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-card-sm hover:bg-light-hover dark:hover:bg-canvas-3 text-light-text-main dark:text-dark-text-main">Abbrechen</button>
+        <button onClick={() => form.name.trim() && onSpeichern(form)} disabled={!form.name.trim()} className="flex-1 px-3 py-2 text-sm bg-primary-500 hover:bg-primary-600 text-white rounded-pill disabled:opacity-50">Speichern</button>
       </div>
     </div>
   );
@@ -271,29 +271,29 @@ const HomeProjekte = ({ session }) => {
   if (loading) return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-light-text-secondary dark:text-dark-text-secondary" /></div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 space-y-4">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FolderOpen size={22} className="text-purple-500" />
           <h1 className="text-xl font-bold text-light-text-main dark:text-dark-text-main">Projekte</h1>
         </div>
-        <div className="flex gap-2">
-          <button onClick={() => setSaisonModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium" title="Jahreszeiten-Template verwenden">
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => setSaisonModal(true)} className="flex items-center gap-1.5 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-pill text-sm font-medium" title="Jahreszeiten-Template verwenden">
             <Leaf size={14} />Saison
           </button>
-          <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium">
+          <button onClick={() => setModal({})} className="flex items-center gap-1.5 px-3 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm font-medium">
             <Plus size={14} />Neues Projekt
           </button>
         </div>
       </div>
 
-      {fehler && <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
+      {fehler && <div className="p-3 rounded-card bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"><AlertCircle size={16} />{fehler}</div>}
 
       {/* Status-Filter */}
-      <div className="flex gap-2 flex-wrap mb-4">
-        <button onClick={() => setStatusFilter("")} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${!statusFilter ? "bg-purple-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
+      <div className="flex gap-2 flex-wrap">
+        <button onClick={() => setStatusFilter("")} className={`px-3 py-1.5 rounded-pill text-xs font-medium transition-colors ${!statusFilter ? "bg-purple-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>Alle</button>
         {STATUS_OPTIONEN.map((s) => (
-          <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${statusFilter === s ? "bg-purple-500 text-white" : "bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{STATUS_LABEL[s]}</button>
+          <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1.5 rounded-pill text-xs font-medium transition-colors ${statusFilter === s ? "bg-purple-500 text-white" : "bg-light-card dark:bg-canvas-2 border border-light-border dark:border-dark-border text-light-text-main dark:text-dark-text-main"}`}>{STATUS_LABEL[s]}</button>
         ))}
       </div>
 
@@ -301,7 +301,7 @@ const HomeProjekte = ({ session }) => {
         <div className="text-center py-12 text-light-text-secondary dark:text-dark-text-secondary">
           <FolderOpen size={40} className="mx-auto mb-3 opacity-30" />
           <p className="text-sm">Noch keine Projekte</p>
-          <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm"><Plus size={14} />Erstes Projekt anlegen</button>
+          <button onClick={() => setModal({})} className="mt-3 flex items-center gap-1.5 mx-auto px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-pill text-sm"><Plus size={14} />Erstes Projekt anlegen</button>
         </div>
       ) : (
         <div className="space-y-3">
@@ -312,7 +312,7 @@ const HomeProjekte = ({ session }) => {
             const fortschritt = projektTodos.length > 0 ? Math.round((erledigtCount / projektTodos.length) * 100) : null;
 
             return (
-              <div key={p.id} className="bg-light-card dark:bg-dark-card rounded-xl border border-light-border dark:border-dark-border overflow-hidden">
+              <div key={p.id} className="bg-light-card dark:bg-canvas-2 rounded-card border border-light-border dark:border-dark-border overflow-hidden">
                 {/* Projekt-Header */}
                 <div className="p-4">
                   <div className="flex items-start justify-between mb-2">
@@ -327,7 +327,7 @@ const HomeProjekte = ({ session }) => {
                   </div>
                   {p.beschreibung && <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary mb-3 line-clamp-2">{p.beschreibung}</p>}
                   <div className="flex items-center justify-between">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_FARBEN[p.status]}`}>{STATUS_LABEL[p.status]}</span>
+                    <span className={`px-2 py-0.5 rounded-pill text-xs font-medium ${STATUS_FARBEN[p.status]}`}>{STATUS_LABEL[p.status]}</span>
                     <div className="flex items-center gap-3 text-xs text-light-text-secondary dark:text-dark-text-secondary">
                       {p.budget && <span>Budget: {Number(p.budget).toFixed(0)} €</span>}
                       {p.zieldatum && <span>Ziel: {p.zieldatum}</span>}
@@ -359,7 +359,7 @@ const HomeProjekte = ({ session }) => {
 
                 {/* Aufgaben-Sektion (ausgeklappt) */}
                 {isExpanded && (
-                  <div className="border-t border-light-border dark:border-dark-border bg-light-bg dark:bg-dark-bg p-3">
+                  <div className="border-t border-light-border dark:border-dark-border bg-light-bg dark:bg-canvas-1 p-3">
                     <div className="space-y-1 mb-3">
                       {projektTodos.length === 0 && (
                         <p className="text-xs text-light-text-secondary dark:text-dark-text-secondary">Noch keine Aufgaben in diesem Projekt.</p>
@@ -375,15 +375,15 @@ const HomeProjekte = ({ session }) => {
                       ))}
                     </div>
                     {/* Neue Aufgabe */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <input
                         value={neuerTodoText}
                         onChange={(e) => setNeuerTodoText(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && todoHinzufuegen(p.id)}
                         placeholder="Neue Aufgabe..."
-                        className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-purple-500"
+                        className="flex-1 px-2 py-1.5 text-xs rounded-card-sm border border-light-border dark:border-dark-border bg-light-card dark:bg-canvas-2 text-light-text-main dark:text-dark-text-main focus:outline-none focus:border-purple-500"
                       />
-                      <button onClick={() => todoHinzufuegen(p.id)} className="px-3 py-1.5 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded-lg">
+                      <button onClick={() => todoHinzufuegen(p.id)} className="px-3 py-1.5 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded-card-sm">
                         <Plus size={12} />
                       </button>
                     </div>
@@ -402,8 +402,8 @@ const HomeProjekte = ({ session }) => {
 
       {modal !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-light-card dark:bg-dark-card rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border sticky top-0 bg-light-card dark:bg-dark-card">
+          <div className="bg-light-card dark:bg-canvas-2 rounded-2xl shadow-2xl max-w-md w-full border border-light-border dark:border-dark-border max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border sticky top-0 bg-light-card dark:bg-canvas-2">
               <h3 className="font-semibold text-light-text-main dark:text-dark-text-main">
                 {modal.id ? "Projekt bearbeiten" : modal._saisonAufgaben ? `Saison-Projekt: ${modal.name}` : "Neues Projekt"}
               </h3>
@@ -411,7 +411,7 @@ const HomeProjekte = ({ session }) => {
             </div>
             {modal._saisonAufgaben && (
               <div className="px-4 pt-3 pb-0">
-                <div className="p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs text-orange-600 dark:text-orange-400">
+                <div className="p-3 rounded-card-sm bg-orange-500/10 border border-orange-500/20 text-xs text-orange-600 dark:text-orange-400">
                   ✦ Template enthält {modal._saisonAufgaben.length} vorgefertigte Aufgaben, die beim Speichern angelegt werden.
                 </div>
               </div>
